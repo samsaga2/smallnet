@@ -7,7 +7,7 @@ BISON = bison
 all: smallc
 
 clean:
-	rm -f lex.yy.c smallc.tab.c smallc.tab.h *.o smallc smallc.output *.stackdump
+	rm -f lex.yy.c smallc.tab.c smallc.tab.h *.o smallc smallc.output *.stackdump *.d
 
 smallc: lex.yy.o smallc.tab.o main.o astdump.o astsemant.o env.o
 	$(CC) $^ -o smallc $(CFLAGS) $(LINK)
@@ -20,7 +20,11 @@ lex.yy.c: smallc.l smallc.tab.c
 
 %.o: %.cc
 	$(CC) -c $(CFLAGS) $<
+	$(CC) -MM $(CFLAGS) $< > $*.d
 
 %.o: %.c
 	$(CC) -c $(CFLAGS) $<
+	$(CC) -MM $(CFLAGS) $< > $*.d
+
+-include *.d
 

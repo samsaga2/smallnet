@@ -17,27 +17,21 @@ void Block::dump(std::ostream &o) {
 }
 
 void Namespace::dump(std::ostream &o) {
-    o << "namespace "; id->dump(o); o << std::endl << "{" << std::endl;
+    o << "namespace " << id << std::endl << "{" << std::endl;
     for(ClassIterator it = csl->begin(); it != csl->end(); it++)
         (*it)->dump(o);
     o << "}" << std::endl;
 }
 
 void Class::dump(std::ostream &o) {
-    o << "class "; id->dump(o); o << std::endl << "{" << std::endl;
+    o << "class " << id << std::endl << "{" << std::endl;
     for(FeatureIterator it = fl->begin(); it != fl->end(); it++)
         (*it)->dump(o);
     o << "}" << std::endl;
 }
 
 void AttrFeature::dump(std::ostream &o) {
-    if(type == NULL)
-        decl_type->dump(o);
-    else {
-        o << "#";
-        type->dump(o);
-    }
-    o << " "; id->dump(o);
+    o << decl_type << " " << id;
     if(expr != NULL) {
         o << " = ";
         expr->dump(o);
@@ -46,14 +40,8 @@ void AttrFeature::dump(std::ostream &o) {
 }
 
 void MethodFeature::dump(std::ostream &o) {
-    if(type == NULL)
-        ret_type->dump(o);
-    else {
-        o << "#";
-        type->dump(o);
-    }
-    o << " "; id->dump(o);
-    o << "(" << ")" << std::endl << "{" << std::endl;
+    o << ret_type << " " << id;
+    o << " " << id << "(" << ")" << std::endl << "{" << std::endl;
     block->dump(o);
     o << "}" << std::endl;
 }

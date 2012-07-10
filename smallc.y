@@ -18,7 +18,6 @@ extern "C" FILE *yyin;
 %union {
     int i;
     std::string *s;
-    AST::Identifier *ident;
     AST::Namespace *ns;
     AST::NamespaceList *nsl;
     AST::Class *cs;
@@ -36,7 +35,6 @@ extern "C" FILE *yyin;
 
 %type <p> program
 %type <nsl> nsl
-%type <ident> ident
 %type <ns> ns
 %type <csl> csl
 %type <cs> cs
@@ -60,24 +58,28 @@ nsl: ns { $$ = new AST::NamespaceList(); $$->push_back($<ns>1); }
    | nsl ns { $1->push_back($<ns>2); }
    ;
 
-ns: NS ident '{' csl '}' { $$ = new AST::Namespace(linenum, $2, $4); }
-  | NS ident '{' '}' { $$ =  new AST::Namespace(linenum, $2); }
+ns: NS ID '{' csl '}' { $$ = new AST::Namespace(linenum, *$2, $4); delete $2; }
+  | NS ID '{' '}' { $$ =  new AST::Namespace(linenum, *$2); delete $2; }
   ;
 
 csl: cs { $$ = new AST::ClassList(); $$->push_back($<cs>1); }
    | csl cs { $1->push_back($<cs>2); }
    ;
 
-cs: CLASS ident '{' '}' { $$ = new AST::Class(linenum, $2); }
-  | CLASS ident '{' features '}' { $$ = new AST::Class(linenum, $2, $4); }
+cs: CLASS ID '{' '}'                    { $$ = new AST::Class(linenum, *$2, false); delete $2; }
+  | STATIC CLASS ID '{' '}'             { $$ = new AST::Class(linenum, *$3, true); delete $3; }
+  | CLASS ID '{' features '}'           { $$ = new AST::Class(linenum, *$2, $4, false); delete $2; }
+  | STATIC CLASS ID '{' features '}'    { $$ = new AST::Class(linenum, *$3, $5, true); delete $3; }
   ;
 
 features: attr { $$ = new AST::FeatureList(); $$->push_back($1); }
         | features attr { $1->push_back($2); }
         ;
 
-attr: ident ident ';' { $$ = new AST::AttrFeature(linenum, $2, $1); }
-    | ident ident '=' expr ';' { $$ = new AST::AttrFeature(linenum, $2, $1, $4); }
+attr: ID ID ';'                         { $$ = new AST::AttrFeature(linenum, *$2, *$1, NULL, false); delete $2; delete $1; }
+    | STATIC ID ID ';'                  { $$ = new AST::AttrFeature(linenum, *$3, *$2, NULL, true); delete $3; delete $2; }
+    | ID ID '=' expr ';'                { $$ = new AST::AttrFeature(linenum, *$2, *$1, $4, false); delete $2; delete $1; }
+    | STATIC ID ID '=' expr ';'         { $$ = new AST::AttrFeature(linenum, *$3, *$2, $5, true); delete $3; delete $2; }
     ;
 
 binop: expr PLUS expr { $$ = new AST::Plus(linenum, $1, $3); }
@@ -88,15 +90,12 @@ binop: expr PLUS expr { $$ = new AST::Plus(linenum, $1, $3); }
 
 term: int { $$ = $1; }
     | '(' int  ')' { $$ = $2; }
-    | ident { $$ = new AST::Object(linenum, $1); }
+    | ID { $$ = new AST::Object(linenum, *$1); delete $1; }
     ;
 
 expr: binop
     | term
     ;
-
-ident: ID { $$ = new AST::Identifier(*$1); delete $1; }
-     ;
 
 int: INT { $$ = new AST::Integer(linenum, $1); }
    ;

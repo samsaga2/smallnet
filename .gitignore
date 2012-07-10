@@ -1,1 +1,7 @@
 *.o
+*.d
+*.exe
+smallc.output
+lex.yy.c
+smallc.tab.c
+smallc.tab.h

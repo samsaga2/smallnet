@@ -5,7 +5,7 @@
 #include <map>
 #include "ast.h"
 
-typedef std::map<AST::Identifier*, AST::Identifier*> EnvironmentVarMap;
+typedef std::map<std::string, std::string> EnvironmentVarMap;
 typedef std::list<EnvironmentVarMap*> EnvironmentVarList;
 
 class Environment
@@ -15,11 +15,12 @@ class Environment
 
     public:
         std::string ns;
+        AST::Class *c;
 
         void push();
         void pop();
 
-        void add_var(AST::Identifier *id, AST::Identifier *type);
-        AST::Identifier *find_var(AST::Identifier *id);
+        void add_var(std::string id, std::string type);
+        std::string find_var(std::string id);
 };
 

@@ -5,14 +5,14 @@ namespace Test1
 
 namespace Test2
 {
-    class Test3
+    static class Test3
     {
-        int _i;
+        static int _i;
     }
 
-    class Test4
+    static class Test4
     {
-        int _j = 1+2;
-        int _k = 3+_j*2;
+        static int _j = 1+2;
+        static int _k = 3+_j*2;
     }
 }

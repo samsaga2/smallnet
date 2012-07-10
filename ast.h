@@ -22,13 +22,6 @@ namespace AST {
     typedef std::vector<Class*>::iterator ClassIterator;
     typedef std::vector<Feature*>::iterator FeatureIterator;
 
-    class Identifier {
-        public:
-            std::string name;
-            Identifier(const std::string &name) : name(name) { }
-            void dump(std::ostream &o) { o << name; }
-    };
-
     class Node
     {
         public:
@@ -52,9 +45,8 @@ namespace AST {
 
     class Expr : public Node {
         public:
-            Identifier* type;
+            std::string type;
             Expr(int linenum) : Node(linenum) { }
-            ~Expr() { delete type; }
     };
 
     class Statement : public Node {
@@ -70,10 +62,9 @@ namespace AST {
 
     class Object : public Expr {
         public:
-            Identifier *id;
-            Object(int linenum, Identifier *id) : Expr(linenum), id(id) { }
-            ~Object() { delete id; }
-            void dump(std::ostream &o) { id->dump(o); }
+            std::string id;
+            Object(int linenum, std::string id) : Expr(linenum), id(id) { }
+            void dump(std::ostream &o) { o << id; }
             void semant(Environment *e);
     };
 
@@ -89,18 +80,20 @@ namespace AST {
 
     class Feature : public Node {
         public:
-            Feature(int linenum) : Node(linenum) { }
+            bool is_static;
+            Feature(int linenum, bool is_static) : Node(linenum), is_static(is_static) { }
             virtual void semant_declare(Environment *e) = 0;
     };
 
     class AttrFeature : public Feature {
         public:
-            Identifier *id;
-            Identifier *decl_type;
-            Identifier *type;
+            std::string id;
+            std::string decl_type;
+            std::string type;
             Expr *expr;
-            AttrFeature(int linenum, Identifier *id, Identifier *decl_type, Expr *expr = NULL) : Feature(linenum), id(id), decl_type(decl_type), expr(expr) { }
-            ~AttrFeature() { delete id; delete decl_type; if(expr) delete expr; }
+            AttrFeature(int linenum, std::string id, std::string decl_type, Expr *expr, bool is_static)
+                : Feature(linenum, is_static), id(id), decl_type(decl_type), expr(expr) { }
+            ~AttrFeature() { if(expr) delete expr; }
             void dump(std::ostream &o);
             void semant(Environment *e);
             void semant_declare(Environment *e);
@@ -108,9 +101,9 @@ namespace AST {
 
     class MethodFeature : public Feature {
         public:
-            Identifier *id;
-            Identifier *ret_type;
-            Identifier *type;
+            std::string id;
+            std::string ret_type;
+            std::string type;
             Block *block;
             // TODO args
             void dump(std::ostream &o);
@@ -120,22 +113,23 @@ namespace AST {
 
     class Namespace : public Node {
         public:
-            Identifier *id;
+            std::string id;
             ClassList *csl;
-            Namespace(int linenum, Identifier *id, ClassList *csl) : Node(linenum), id(id), csl(csl) { }
-            Namespace(int linenum, Identifier *id) : Node(linenum), id(id), csl(new ClassList()) { }
-            ~Namespace() { delete id; delete csl; }
+            Namespace(int linenum, std::string id, ClassList *csl) : Node(linenum), id(id), csl(csl) { }
+            Namespace(int linenum, std::string id) : Node(linenum), id(id), csl(new ClassList()) { }
+            ~Namespace() { delete csl; }
             void dump(std::ostream &o);
             void semant(Environment *e);
     };
 
     class Class : public Node {
         public:
-            Identifier *id;
+            std::string id;
             FeatureList *fl;
-            Class(int linenum, Identifier *id, FeatureList *fl) : Node(linenum), id(id), fl(fl) { }
-            Class(int linenum, Identifier *id) : Node(linenum), id(id), fl(new FeatureList()) { }
-            ~Class() { delete id; delete fl; }
+            bool is_static;
+            Class(int linenum, std::string id, FeatureList *fl, bool is_static) : Node(linenum), id(id), fl(fl), is_static(is_static) { }
+            Class(int linenum, std::string id, bool is_static) : Node(linenum), id(id), fl(new FeatureList()), is_static(is_static) { }
+            ~Class() { delete fl; }
             void dump(std::ostream &o);
             void semant(Environment *e);
     };

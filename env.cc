@@ -1,7 +1,6 @@
 #include "env.h"
 
 using namespace std;
-using namespace AST;
 
 void Environment::push() {
     EnvironmentVarMap *m = new EnvironmentVarMap();
@@ -13,17 +12,17 @@ void Environment::pop() {
     vars.pop_back();
 }
 
-void Environment::add_var(AST::Identifier *id, AST::Identifier *type) {
+void Environment::add_var(std::string id, std::string type) {
     (*vars.back())[id] = type;
 }
 
-AST::Identifier *Environment::find_var(AST::Identifier *id) {
+std::string Environment::find_var(std::string id) {
     for(EnvironmentVarList::reverse_iterator it = vars.rbegin(); it != vars.rend(); it++) {
         EnvironmentVarMap* m = *it;
         if(m->find(id) != m->end())
             return (*m)[id];
     }
 
-    return NULL;
+    return "";
 }
 
