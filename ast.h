@@ -85,15 +85,15 @@ namespace AST {
             virtual void semant_declare(Environment *e) = 0;
     };
 
-    class AttrFeature : public Feature {
+    class FieldFeature : public Feature {
         public:
             std::string id;
             std::string decl_type;
             std::string type;
             Expr *expr;
-            AttrFeature(int linenum, std::string id, std::string decl_type, Expr *expr, bool is_static)
+            FieldFeature(int linenum, std::string id, std::string decl_type, Expr *expr, bool is_static)
                 : Feature(linenum, is_static), id(id), decl_type(decl_type), expr(expr) { }
-            ~AttrFeature() { if(expr) delete expr; }
+            ~FieldFeature() { if(expr) delete expr; }
             void dump(std::ostream &o);
             void semant(Environment *e);
             void semant_declare(Environment *e);

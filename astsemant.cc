@@ -26,7 +26,7 @@ void Block::semant(Environment *e) {
         (*it)->semant(e);
 }
 
-void AttrFeature::semant(Environment *e) {
+void FieldFeature::semant(Environment *e) {
     type = decl_type;
     if(expr == NULL)
         return;
@@ -36,7 +36,10 @@ void AttrFeature::semant(Environment *e) {
         std::cerr << linenum << ": Non-matching types `" << expr->type << "' and `" << decl_type << "'" << std::endl;
 }
 
-void AttrFeature::semant_declare(Environment *e) {
+void FieldFeature::semant_declare(Environment *e) {
+    if(e->c->is_static && !is_static)
+        std::cerr << linenum << ": Non-static field declared `" << id << "'" << std::endl;
+
     if(e->find_var(id) != "")
         std::cerr << linenum << ": Duplicated attribute `" << id << "'" << std::endl;
         
@@ -49,6 +52,9 @@ void MethodFeature::semant(Environment *e) {
 }
 
 void MethodFeature::semant_declare(Environment *e) {
+    if(e->c->is_static && !is_static)
+        std::cerr << linenum << ": Non-static method declared `" << id << "'" << std::endl;
+
     if(e->find_var(id) != "")
         std::cerr << linenum << ": Duplicated method `" << id << "'" << std::endl;
 

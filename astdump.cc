@@ -30,7 +30,7 @@ void Class::dump(std::ostream &o) {
     o << "}" << std::endl;
 }
 
-void AttrFeature::dump(std::ostream &o) {
+void FieldFeature::dump(std::ostream &o) {
     o << decl_type << " " << id;
     if(expr != NULL) {
         o << " = ";

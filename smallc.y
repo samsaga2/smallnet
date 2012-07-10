@@ -23,7 +23,7 @@ extern "C" FILE *yyin;
     AST::Class *cs;
     AST::ClassList *csl;
     AST::Program *p;
-    AST::AttrFeature *attr;
+    AST::FieldFeature *field;
     AST::FeatureList *fl;
     AST::Expr *expr;
     AST::Integer *inte;
@@ -38,7 +38,7 @@ extern "C" FILE *yyin;
 %type <ns> ns
 %type <csl> csl
 %type <cs> cs
-%type <attr> attr
+%type <field> field
 %type <fl> features
 %type <expr> expr binop term
 %type <inte> int
@@ -72,21 +72,21 @@ cs: CLASS ID '{' '}'                    { $$ = new AST::Class(linenum, *$2, fals
   | STATIC CLASS ID '{' features '}'    { $$ = new AST::Class(linenum, *$3, $5, true); delete $3; }
   ;
 
-features: attr { $$ = new AST::FeatureList(); $$->push_back($1); }
-        | features attr { $1->push_back($2); }
+features: field { $$ = new AST::FeatureList(); $$->push_back($1); }
+        | features field { $1->push_back($2); }
         ;
 
-attr: ID ID ';'                         { $$ = new AST::AttrFeature(linenum, *$2, *$1, NULL, false); delete $2; delete $1; }
-    | STATIC ID ID ';'                  { $$ = new AST::AttrFeature(linenum, *$3, *$2, NULL, true); delete $3; delete $2; }
-    | ID ID '=' expr ';'                { $$ = new AST::AttrFeature(linenum, *$2, *$1, $4, false); delete $2; delete $1; }
-    | STATIC ID ID '=' expr ';'         { $$ = new AST::AttrFeature(linenum, *$3, *$2, $5, true); delete $3; delete $2; }
-    ;
+field: ID ID ';'                         { $$ = new AST::FieldFeature(linenum, *$2, *$1, NULL, false); delete $2; delete $1; }
+     | STATIC ID ID ';'                  { $$ = new AST::FieldFeature(linenum, *$3, *$2, NULL, true); delete $3; delete $2; }
+     | ID ID '=' expr ';'                { $$ = new AST::FieldFeature(linenum, *$2, *$1, $4, false); delete $2; delete $1; }
+     | STATIC ID ID '=' expr ';'         { $$ = new AST::FieldFeature(linenum, *$3, *$2, $5, true); delete $3; delete $2; }
+     ;
 
 binop: expr PLUS expr { $$ = new AST::Plus(linenum, $1, $3); }
-    | expr MINUS expr { $$ = new AST::Sub(linenum, $1, $3); }
-    | expr MULT expr { $$ = new AST::Mult(linenum, $1, $3); }
-    | expr DIV expr { $$ = new AST::Div(linenum, $1, $3); }
-    ;
+     | expr MINUS expr { $$ = new AST::Sub(linenum, $1, $3); }
+     | expr MULT expr { $$ = new AST::Mult(linenum, $1, $3); }
+     | expr DIV expr { $$ = new AST::Div(linenum, $1, $3); }
+     ;
 
 term: int { $$ = $1; }
     | '(' int  ')' { $$ = $2; }
