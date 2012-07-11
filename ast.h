@@ -3,8 +3,10 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "ir.h"
 
 class Environment;
+class Declarations;
 
 namespace AST {
     class Statement;
@@ -29,7 +31,6 @@ namespace AST {
             Node(int linenum) : linenum(linenum) { }
             virtual void dump(std::ostream &o) = 0;
             virtual void semant(Environment *e) = 0;
-            // TODO codegen
     };
 
     class Program : public Node
@@ -40,7 +41,9 @@ namespace AST {
             Program(int linenum) : Node(linenum), nsl(new NamespaceList()) { }
             ~Program();
             void dump(std::ostream &o);
+            void declare(Declarations *decl);
             void semant(Environment *e);
+            IR::Prog *codegen(Environment *env);
     };
 
     class Expr : public Node {
@@ -82,7 +85,8 @@ namespace AST {
         public:
             bool is_static;
             Feature(int linenum, bool is_static) : Node(linenum), is_static(is_static) { }
-            virtual void semant_declare(Environment *e) = 0;
+            virtual void declare(Declarations *decl) = 0;
+            virtual void codegen(IR::Prog *ir, Environment *env) = 0;
     };
 
     class FieldFeature : public Feature {
@@ -95,8 +99,9 @@ namespace AST {
                 : Feature(linenum, is_static), id(id), decl_type(decl_type), expr(expr) { }
             ~FieldFeature() { if(expr) delete expr; }
             void dump(std::ostream &o);
+            void declare(Declarations *decl);
             void semant(Environment *e);
-            void semant_declare(Environment *e);
+            void codegen(IR::Prog *ir, Environment *env);
     };
 
     class MethodFeature : public Feature {
@@ -107,8 +112,9 @@ namespace AST {
             Block *block;
             // TODO args
             void dump(std::ostream &o);
+            void declare(Declarations *decl);
             void semant(Environment *e);
-            void semant_declare(Environment *e);
+            void codegen(IR::Prog *ir, Environment *env);
     };
 
     class Namespace : public Node {
@@ -119,7 +125,9 @@ namespace AST {
             Namespace(int linenum, std::string id) : Node(linenum), id(id), csl(new ClassList()) { }
             ~Namespace();
             void dump(std::ostream &o);
+            void declare(Declarations *decl);
             void semant(Environment *e);
+            void codegen(IR::Prog *irprog, Environment *env);
     };
 
     class Class : public Node {
@@ -131,7 +139,9 @@ namespace AST {
             Class(int linenum, std::string id, bool is_static) : Node(linenum), id(id), fl(new FeatureList()), is_static(is_static) { }
             ~Class();
             void dump(std::ostream &o);
+            void declare(Declarations *decl);
             void semant(Environment *e);
+            void codegen(IR::Prog *irprog, Environment *env);
     };
 
     class BinOp : public Expr {

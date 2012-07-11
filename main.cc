@@ -1,24 +1,33 @@
-#include <iostream>
-#include "parse.h"
 #include "ast.h"
+#include "decl.h"
 #include "env.h"
+#include "ir.h"
+#include "parse.h"
+#include <iostream>
 
 int main() {
     // parse
-    AST::Program *program = parse("test.sc");
-    if(program == NULL)
+    AST::Program *astprog = parse("test.sc");
+    if(astprog == NULL)
         return 1;
 
-    // type checker
-    Environment *env = new Environment();
-    program->semant(env);
+    // declareations
+    Declarations *decl = new Declarations();
+    astprog->declare(decl);
 
-    std::cout << std::endl;
+    // type checker
+    Environment *env = new Environment(decl);
+    astprog->semant(env);
 
 #if DEBUG
     // debug
-    program->dump(std::cout);
+    std::cout << std::endl;
+    astprog->dump(std::cout);
 #endif
+
+    // code gen
+    IR::Prog *irprog = astprog->codegen(env);
+    irprog->dump(std::cout);
 
     return 0;
 }

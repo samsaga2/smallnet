@@ -4,91 +4,65 @@
 using namespace AST;
 using namespace std;
 
-void Integer::semant(Environment *e) {
+void Integer::semant(Environment *env) {
     type = "int";
 }
 
-void Program::semant(Environment *e) {
+void Program::semant(Environment *env) {
     for(NamespaceIterator it = nsl->begin(); it != nsl->end(); it++)
-        (*it)->semant(e);
+        (*it)->semant(env);
 }
 
-void Object::semant(Environment *e) {
-    type = e->find_var(id);
-    if(type == "") {
+void Object::semant(Environment *env) {
+    EnvironmentVar* var = env->find_var(id);
+    if(var == NULL) {
         std::cerr << linenum << ": `" << id << "' undefined" << std::endl;
         type = "_ErrorType_";
-    }
+    } else
+        type = var->type;
 }
 
-void Block::semant(Environment *e) {
+void Block::semant(Environment *env) {
     for(StatementIterator it = sl->begin(); it != sl->end(); it++)
-        (*it)->semant(e);
+        (*it)->semant(env);
 }
 
-void FieldFeature::semant(Environment *e) {
+void FieldFeature::semant(Environment *env) {
     type = decl_type;
     if(expr == NULL)
         return;
 
-    expr->semant(e);
+    expr->semant(env);
     if(expr->type != decl_type && expr->type != "_ErrorType_")
         std::cerr << linenum << ": Non-matching types `" << expr->type << "' and `" << decl_type << "'" << std::endl;
 }
 
-void FieldFeature::semant_declare(Environment *e) {
-    if(e->c->is_static && !is_static)
-        std::cerr << linenum << ": Non-static field declared `" << id << "'" << std::endl;
-
-    if(e->find_var(id) != "")
-        std::cerr << linenum << ": Duplicated attribute `" << id << "'" << std::endl;
-        
-    e->add_var(id, decl_type);
-}
-
-void MethodFeature::semant(Environment *e) {
+void MethodFeature::semant(Environment *env) {
     // TODO
     type = ret_type;
 }
 
-void MethodFeature::semant_declare(Environment *e) {
-    if(e->c->is_static && !is_static)
-        std::cerr << linenum << ": Non-static method declared `" << id << "'" << std::endl;
-
-    if(e->find_var(id) != "")
-        std::cerr << linenum << ": Duplicated method `" << id << "'" << std::endl;
-
-    e->add_var(id, ret_type);
-}
-
-void Namespace::semant(Environment *e) {
-    string prev_ns = e->ns;
-    e->ns += "." + id;
+void Namespace::semant(Environment *env) {
+    env->push_namespace(this);
 
     for(ClassIterator it = csl->begin(); it != csl->end(); it++)
-        (*it)->semant(e);
+        (*it)->semant(env);
 
-    e->ns = prev_ns;
+    env->pop_namespace();
 }
 
-void Class::semant(Environment *e) {
-    Class *prev_c = e->c;
-    e->c = this;
-    e->push();
+void Class::semant(Environment *env) {
+    env->push_class(this);
 
     for(FeatureIterator it = fl->begin(); it != fl->end(); it++)
-        (*it)->semant_declare(e);
+        (*it)->semant(env);
 
-    for(FeatureIterator it = fl->begin(); it != fl->end(); it++)
-        (*it)->semant(e);
-
-    e->pop();
-    e->c = prev_c;
+    env->pop_class();
 }
 
-void BinOp::semant(Environment *e) {
-    e1->semant(e);
-    e2->semant(e);
+void BinOp::semant(Environment *env) {
+    e1->semant(env);
+    e2->semant(env);
     if(e1->type != e2->type) {
         if(e1->type != "_ErrorType_" && e2->type != "_ErrorType_") {
             std::cerr << linenum << ": Non-matching types `" << e1->type << "' and `" << e2->type << "'" << std::endl;
