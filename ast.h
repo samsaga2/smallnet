@@ -38,7 +38,7 @@ namespace AST {
             NamespaceList *nsl;
             Program(int linenum, NamespaceList *nsl) : Node(linenum), nsl(nsl) { }
             Program(int linenum) : Node(linenum), nsl(new NamespaceList()) { }
-            ~Program() { delete nsl; }
+            ~Program();
             void dump(std::ostream &o);
             void semant(Environment *e);
     };
@@ -73,7 +73,7 @@ namespace AST {
             StatementList *sl;
             Block(int linenum, StatementList *sl) : Node(linenum), sl(sl) { }
             Block(int linenum) : Node(linenum), sl(new StatementList()) { }
-            ~Block() { delete sl; }
+            ~Block();
             void dump(std::ostream &o);
             void semant(Environment *e);
     };
@@ -117,7 +117,7 @@ namespace AST {
             ClassList *csl;
             Namespace(int linenum, std::string id, ClassList *csl) : Node(linenum), id(id), csl(csl) { }
             Namespace(int linenum, std::string id) : Node(linenum), id(id), csl(new ClassList()) { }
-            ~Namespace() { delete csl; }
+            ~Namespace();
             void dump(std::ostream &o);
             void semant(Environment *e);
     };
@@ -129,7 +129,7 @@ namespace AST {
             bool is_static;
             Class(int linenum, std::string id, FeatureList *fl, bool is_static) : Node(linenum), id(id), fl(fl), is_static(is_static) { }
             Class(int linenum, std::string id, bool is_static) : Node(linenum), id(id), fl(new FeatureList()), is_static(is_static) { }
-            ~Class() { delete fl; }
+            ~Class();
             void dump(std::ostream &o);
             void semant(Environment *e);
     };
