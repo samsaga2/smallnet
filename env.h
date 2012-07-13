@@ -21,12 +21,13 @@ typedef std::list<std::map<std::string, EnvironmentVar> > EnvironmentVarStack;
 class Environment
 {
     private:
-        Declarations *decl;
         std::list<std::string> ns_stack;
         std::list<AST::Class*> cs_stack;
         EnvironmentVarStack vars_stack;
 
     public:
+        Declarations *decl;
+
         Environment(Declarations *decl) : decl(decl) { }
 
         void push_namespace(AST::Namespace *ns);

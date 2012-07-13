@@ -1,0 +1,6 @@
+Differences with real c#:
+* no garbage collector (you must use dispose method)
+* vars has not defaults values (for optimization proposes)
+* TODO exceptions
+* TODO non-static methods and fields
+

@@ -6,6 +6,7 @@
 
 namespace IR {
     typedef enum {
+        IRTYPE_VOID,
         IRTYPE_U8,
         IRTYPE_S8,
         IRTYPE_U16,
@@ -15,7 +16,9 @@ namespace IR {
     class Inst {
         public:
             Type type;
+
             Inst(Type type) : type(type) { }
+            virtual ~Inst() { }
             virtual void dump(std::ostream &o) = 0;
     };
 
@@ -24,8 +27,11 @@ namespace IR {
     class Block {
         public:
             std::string label;
-            InstList insts;
+            InstList il;
+
             Block(std::string label) : label(label) { }
+            ~Block();
+            void add_inst(Inst *i) { il.push_back(i); }
             void dump(std::ostream &o);
     };
 
@@ -34,13 +40,17 @@ namespace IR {
     class Prog {
         public:
             BlockList bl;
+
+            ~Prog();
             void dump(std::ostream &o);
+            void add_block(Block *b) { bl.push_back(b); }
     };
 
     class Move : public Inst {
         public:
             int rdst;
             int rsrc;
+
             Move(Type type, int rdst, int rsrc) : Inst(type), rdst(rdst), rsrc(rsrc) { }
             void dump(std::ostream &o);
     };
@@ -49,6 +59,7 @@ namespace IR {
         public:
             int rdst;
             int imm_src;
+
             LoadImm(Type type, int rdst, int imm_src) : Inst(type), rdst(rdst), imm_src(imm_src) { }
             void dump(std::ostream &o);
     };
@@ -57,6 +68,7 @@ namespace IR {
         public:
             int rdst;
             std::string label_src;
+
             Load(Type type, int rdst, std::string label_src) : Inst(type), rdst(rdst), label_src(label_src) { }
             void dump(std::ostream &o);
     };
@@ -65,6 +77,7 @@ namespace IR {
         public:
             std::string label_dst;
             int rsrc;
+
             Store(Type type, std::string label_dst, int rsrc) : Inst(type), label_dst(label_dst), rsrc(rsrc) { }
             void dump(std::ostream &o);
     };
@@ -74,6 +87,7 @@ namespace IR {
             int rdst;
             int rsrc1;
             int rsrc2;
+
             Add(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
             void dump(std::ostream &o);
     };
@@ -83,6 +97,7 @@ namespace IR {
             int rdst;
             int rsrc1;
             int rsrc2;
+
             Sub(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
             void dump(std::ostream &o);
     };
@@ -92,6 +107,7 @@ namespace IR {
             int rdst;
             int rsrc1;
             int rsrc2;
+
             Mult(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
             void dump(std::ostream &o);
     };
@@ -101,7 +117,14 @@ namespace IR {
             int rdst;
             int rsrc1;
             int rsrc2;
+
             Div(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
+            void dump(std::ostream &o);
+    };
+
+    class Ret : public Inst {
+        public:
+            Ret() : Inst(IRTYPE_VOID) { }
             void dump(std::ostream &o);
     };
 }

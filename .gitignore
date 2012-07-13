@@ -2,6 +2,8 @@
 *.d
 *.exe
 smallc.output
-lex.yy.c
-smallc.tab.c
+lex.yy.cc
+smallc.tab.cc
 smallc.tab.h
+tags
+smallc
