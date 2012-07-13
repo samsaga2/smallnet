@@ -4,6 +4,14 @@
 
 using namespace std;
 
+const string Labels::global_start = "__start";
+
+string Labels::static_class_initializer_label(string ns, AST::Class *c) {
+    stringstream ss;
+    ss << "_" << boost::replace_all_copy(ns, ".", "_") << "__" << c->id << "___sinitializer";
+    return ss.str();
+}
+
 string Labels::class_initializer_label(string ns, AST::Class *c) {
     stringstream ss;
     ss << "_" << boost::replace_all_copy(ns, ".", "_") << "__" << c->id << "___initializer";

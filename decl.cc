@@ -24,6 +24,7 @@ void Declarations::push_class(AST::Class *cs) {
 
     // add class info
     ClassInfo *csi = new ClassInfo();
+    csi->static_initializer_label = labels.static_class_initializer_label(get_current_ns(), cs);
     csi->initializer_label = labels.class_initializer_label(get_current_ns(), cs);
     cs_info[cs] = csi;
 }

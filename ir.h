@@ -7,10 +7,10 @@
 namespace IR {
     typedef enum {
         IRTYPE_VOID,
-        IRTYPE_U8,
-        IRTYPE_S8,
-        IRTYPE_U16,
-        IRTYPE_S16
+        IRTYPE_U1,
+        IRTYPE_S1,
+        IRTYPE_U2,
+        IRTYPE_S2
     } Type;
 
     class Inst {
@@ -125,6 +125,16 @@ namespace IR {
     class Ret : public Inst {
         public:
             Ret() : Inst(IRTYPE_VOID) { }
+            void dump(std::ostream &o);
+    };
+
+    class Call : public Inst {
+        public:
+            int rdst;
+            std::string label;
+
+            Call(std::string label) : Inst(IRTYPE_VOID), label(label) { }
+            Call(Type type, int rdst, std::string label) : Inst(type), rdst(rdst), label(label) { }
             void dump(std::ostream &o);
     };
 }

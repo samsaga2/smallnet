@@ -19,15 +19,19 @@ class FieldInfo {
 
 class ClassInfo {
     public:
+        std::string static_initializer_label;
         std::string initializer_label;
 };
+
+typedef std::map<AST::FieldFeature*, FieldInfo*> FieldInfoMap;
+typedef std::map<AST::Class*, ClassInfo*> ClassInfoMap;
 
 class Declarations {
     private:
         std::list<std::string> ns_stack;
         std::list<AST::Class*> cs_stack;
-        std::map<AST::FieldFeature*, FieldInfo*> ff_info;
-        std::map<AST::Class*, ClassInfo*> cs_info;
+        FieldInfoMap ff_info;
+        ClassInfoMap cs_info;
         Labels labels;
 
     public:
@@ -51,5 +55,8 @@ class Declarations {
 
         FieldInfo *get_field_info(AST::FieldFeature *f) { return ff_info[f]; }
         ClassInfo *get_class_info(AST::Class *cs) { return cs_info[cs]; }
+        
+        ClassInfoMap::iterator begin_classes() { return cs_info.begin(); }
+        ClassInfoMap::iterator end_classes() { return cs_info.end(); }
 };
 

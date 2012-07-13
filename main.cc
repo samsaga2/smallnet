@@ -21,13 +21,18 @@ int main() {
 
 #if DEBUG
     // debug
-    std::cout << std::endl;
+    std::cout << std::endl << "// AST" << std::endl;
     astprog->dump(std::cout);
 #endif
 
     // code gen
     IR::Prog *irprog = astprog->codegen(env);
+
+#if DEBUG
+    // debug
+    std::cout << std::endl << "// IR" << std::endl;
     irprog->dump(std::cout);
+#endif
 
     return 0;
 }

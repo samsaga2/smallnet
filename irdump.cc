@@ -6,10 +6,10 @@ using namespace IR;
 std::string dump_type(Type type) {
     switch(type) {
         case IRTYPE_VOID: break;
-        case IRTYPE_U8:   return ".u8 ";
-        case IRTYPE_S8:   return ".s8 ";
-        case IRTYPE_U16:  return ".u16";
-        case IRTYPE_S16:  return ".s16";
+        case IRTYPE_U1: return ".u1";
+        case IRTYPE_S1: return ".s1";
+        case IRTYPE_U2: return ".u2";
+        case IRTYPE_S2: return ".s2";
     }
 
     return "";
@@ -32,15 +32,15 @@ void Prog::dump(ostream &o) {
 }
 
 void Move::dump(ostream &o) {
-    o << "move" << dump_type(type) << "  #" << rdst << ",#" << rsrc;
+    o << "#" << rdst << " = move" << dump_type(type) << " #" << rsrc;
 }
 
 void LoadImm::dump(ostream &o) {
-    o << "ldimm" << dump_type(type) << " #" << rdst << "," << imm_src;
+    o << "#" << rdst << " = ldimm" << dump_type(type) << " " << imm_src;
 }
 
 void Load::dump(ostream &o) {
-    o << "load" << dump_type(type) << "  #" << rdst << "," << label_src;
+    o << "#" << rdst << " = load" << dump_type(type) << " " << label_src;
 }
 
 void Store::dump(ostream &o) {
@@ -48,22 +48,29 @@ void Store::dump(ostream &o) {
 }
 
 void Add::dump(ostream &o) {
-    o << "add" << dump_type(type) << "   #" << rdst << ",#" << rsrc1 << ",#" << rsrc2;
+    o << "#" << rdst << " = add" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
 }
 
 void Sub::dump(ostream &o) {
-    o << "sub" << dump_type(type) << "   #" << rdst << ",#" << rsrc1 << ",#" << rsrc2;
+    o << "#" << rdst << " = sub" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
 }
 
 void Mult::dump(ostream &o) {
-    o << "mult" << dump_type(type) << "  #" << rdst << ",#" << rsrc1 << ",#" << rsrc2;
+    o << "#" << rdst << " = mult" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
 }
 
 void Div::dump(ostream &o) {
-    o << "div" << dump_type(type) << "   #" << rdst << ",#" << rsrc1 << ",#" << rsrc2;
+    o << "#" << rdst << " = div" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
 }
 
 void Ret::dump(ostream &o) {
     o << "ret";
+}
+
+void Call::dump(ostream &o) {
+    if(type == IRTYPE_VOID)
+        o << "call " << label;
+    else
+        o << "#" << rdst << " = call" << dump_type(type) << " " << label;
 }
 

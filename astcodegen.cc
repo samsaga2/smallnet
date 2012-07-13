@@ -7,8 +7,20 @@ using namespace std;
 
 int reg_count;
 
+void Program::codegen_start(IR::Prog *irprog, Environment *env) {
+    IR::Block *b = new IR::Block(Labels::global_start);
+    for(ClassInfoMap::iterator it = env->decl->begin_classes(); it != env->decl->end_classes(); it++) {
+        ClassInfo *csi = it->second;
+        b->add_inst(new IR::Call(csi->static_initializer_label));
+    }
+    b->add_inst(new IR::Ret());
+    irprog->add_block(b);
+}
+
 IR::Prog *Program::codegen(Environment *env) {
     IR::Prog *irprog = new IR::Prog();
+
+    codegen_start(irprog, env);
 
     for(NamespaceList::iterator it = nsl->begin(); it != nsl->end(); it++)
         (*it)->codegen(irprog, env);
@@ -25,27 +37,45 @@ void Namespace::codegen(IR::Prog *irprog, Environment *env) {
     env->pop_namespace();
 }
 
-void Class::codegen(IR::Prog *irprog, Environment *env) {
-    env->push_class(this);
+void Class::codegen_static_initializer(IR::Prog *irprog, Environment *env) {
+    ClassInfo *csi = env->decl->get_class_info(this);
+    IR::Block *b = new IR::Block(csi->static_initializer_label);
+    reg_count = 0;
+    for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
+        FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
+        if(f != NULL && f->expr != NULL && f->is_static) {
+            FieldInfo *fi = env->decl->get_field_info(f);
+            int rsrc = f->expr->codegen(b, env);
+            if(f->is_static)
+                b->add_inst(new IR::Store(f->expr->get_irtype(), fi->static_label, rsrc));
+        }
+    }
+    b->add_inst(new IR::Ret());
+    irprog->add_block(b);
+}
 
-    // initializier
+void Class::codegen_initializer(IR::Prog *irprog, Environment *env) {
     ClassInfo *csi = env->decl->get_class_info(this);
     IR::Block *b = new IR::Block(csi->initializer_label);
     reg_count = 0;
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
         FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
-        if(f != NULL && f->expr != NULL) {
+        if(f != NULL && f->expr != NULL && !f->is_static) {
             FieldInfo *fi = env->decl->get_field_info(f);
             int rsrc = f->expr->codegen(b, env);
-            if(f->is_static)
-                b->add_inst(new IR::Store(f->expr->get_irtype(), fi->static_label, rsrc));
-            else {
-                // TODO non-static fields
-            }
+            if(f->is_static) // TODO field index
+                b->add_inst(new IR::Store(f->expr->get_irtype(), "_molo_mogollon_", rsrc));
         }
     }
     b->add_inst(new IR::Ret());
     irprog->add_block(b);
+}
+
+void Class::codegen(IR::Prog *irprog, Environment *env) {
+    env->push_class(this);
+
+    codegen_static_initializer(irprog, env);
+    codegen_initializer(irprog, env);
 
     // methods
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++)
@@ -67,13 +97,13 @@ void Block::codegen(IR::Block *b, Environment *env) {
 
 IR::Type Expr::get_irtype() {
     if(type == "int")
-        return IR::IRTYPE_S16;
+        return IR::IRTYPE_S2;
     else if(type == "uint")
-        return IR::IRTYPE_U16;
+        return IR::IRTYPE_U2;
     else if(type == "byte")
-        return IR::IRTYPE_S8;
+        return IR::IRTYPE_S1;
     else if(type == "ubyte")
-        return IR::IRTYPE_U8;
+        return IR::IRTYPE_U1;
 
     throw "INTERNAL ERROR";
 }

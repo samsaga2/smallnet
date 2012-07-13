@@ -1,6 +1,12 @@
 Differences with real c#:
 * no garbage collector (you must use dispose method)
 * vars has not defaults values (for optimization proposes)
+* TODO non-static fields and methods
 * TODO exceptions
 * TODO non-static methods and fields
+* TODO nested namespaces
+* TODO nested classes
+* TODO string
+* TODO conditionals and loops
+* TODO memory manager
 

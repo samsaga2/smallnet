@@ -1,4 +1,4 @@
-CC = clang++
+CC = g++
 CFLAGS = -g -DDEBUG
 LINK = -lfl
 FLEX = flex

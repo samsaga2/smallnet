@@ -28,6 +28,8 @@ void Block::semant(Environment *env) {
 }
 
 void FieldFeature::semant(Environment *env) {
+    // TODO forbidden dot on id
+    
     type = decl_type;
     if(expr == NULL)
         return;
@@ -38,6 +40,7 @@ void FieldFeature::semant(Environment *env) {
 }
 
 void MethodFeature::semant(Environment *env) {
+    // TODO forbidden dot on id
     // TODO
     type = ret_type;
 }
@@ -52,6 +55,8 @@ void Namespace::semant(Environment *env) {
 }
 
 void Class::semant(Environment *env) {
+    // TODO forbidden dot on id
+    
     env->push_class(this);
 
     for(FeatureIterator it = fl->begin(); it != fl->end(); it++)

@@ -46,6 +46,7 @@ namespace AST {
             void dump(std::ostream &o);
             void declare(Declarations *decl);
             void semant(Environment *e);
+            void codegen_start(IR::Prog *irrog, Environment *env);
             IR::Prog *codegen(Environment *env);
     };
 
@@ -160,6 +161,8 @@ namespace AST {
             void dump(std::ostream &o);
             void declare(Declarations *decl);
             void semant(Environment *e);
+            void codegen_static_initializer(IR::Prog *irprog, Environment *env);
+            void codegen_initializer(IR::Prog *irprog, Environment *env);
             void codegen(IR::Prog *irprog, Environment *env);
     };
 
