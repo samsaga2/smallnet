@@ -15,6 +15,10 @@ std::string dump_type(Type type) {
     return "";
 }
 
+void Comment::dump(std::ostream &o) {
+    o << "// " << comment;
+}
+
 void Block::dump(ostream &o) {
     o << label << ":" << endl;
     for(InstList::iterator it = il.begin(); it != il.end(); it++) {

@@ -22,6 +22,14 @@ namespace IR {
             virtual void dump(std::ostream &o) = 0;
     };
 
+    class Comment : public Inst {
+        public:
+            std::string comment;
+
+            Comment(std::string comment) : Inst(IRTYPE_VOID), comment(comment) { }
+            void dump(std::ostream &o);
+    };
+
     typedef std::vector<Inst*> InstList;
 
     class Block {

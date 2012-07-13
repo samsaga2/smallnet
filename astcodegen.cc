@@ -1,3 +1,4 @@
+#include <sstream>
 #include "ast.h"
 #include "env.h"
 #include "ir.h"
@@ -44,10 +45,13 @@ void Class::codegen_static_initializer(IR::Prog *irprog, Environment *env) {
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
         FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
         if(f != NULL && f->expr != NULL && f->is_static) {
+            stringstream comment;
+            comment << "initializating field " << f->id;
+            b->add_inst(new IR::Comment(comment.str()));
+
             FieldInfo *fi = env->decl->get_field_info(f);
             int rsrc = f->expr->codegen(b, env);
-            if(f->is_static)
-                b->add_inst(new IR::Store(f->expr->get_irtype(), fi->static_label, rsrc));
+            b->add_inst(new IR::Store(f->expr->get_irtype(), fi->static_label, rsrc));
         }
     }
     b->add_inst(new IR::Ret());
@@ -61,10 +65,14 @@ void Class::codegen_initializer(IR::Prog *irprog, Environment *env) {
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
         FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
         if(f != NULL && f->expr != NULL && !f->is_static) {
+            stringstream comment;
+            comment << "initializating field " << f->id;
+            b->add_inst(new IR::Comment(comment.str()));
+
             FieldInfo *fi = env->decl->get_field_info(f);
             int rsrc = f->expr->codegen(b, env);
-            if(f->is_static) // TODO field index
-                b->add_inst(new IR::Store(f->expr->get_irtype(), "_molo_mogollon_", rsrc));
+            // TODO field index
+            b->add_inst(new IR::Store(f->expr->get_irtype(), "_molo_mogollon_", rsrc));
         }
     }
     b->add_inst(new IR::Ret());
