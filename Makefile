@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -g -DDEBUG
+CFLAGS = -g -DDEBUG -Wall
 LINK = -lfl
 FLEX = flex
 BISON = bison

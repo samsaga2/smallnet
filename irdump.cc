@@ -3,29 +3,50 @@
 using namespace std;
 using namespace IR;
 
-std::string dump_type(Type type) {
+void dump_type(Type type, ostream &o) {
     switch(type) {
-        case IRTYPE_VOID: break;
-        case IRTYPE_U1: return ".u1";
-        case IRTYPE_S1: return ".s1";
-        case IRTYPE_U2: return ".u2";
-        case IRTYPE_S2: return ".s2";
+        case TYPE_VOID: break;
+        case TYPE_U1: o << "(u1)"; break;
+        case TYPE_S1: o << "(s1)"; break;
+        case TYPE_U2: o << "(u2)"; break;
+        case TYPE_S2: o << "(s2)"; break;
     }
-
-    return "";
 }
 
-void Comment::dump(std::ostream &o) {
-    o << "// " << comment;
+void dump_opcode(Opcode opcode, ostream &o) {
+    switch(opcode) {
+        case OP_NOP:     o << "nop "; break;
+        case OP_MOVE:    o << "mov "; break;
+        case OP_LOADIMM: o << "ldi "; break;
+        case OP_LOAD:    o << "ld  "; break;
+        case OP_STORE:   o << "str "; break;
+        case OP_ADD:     o << "add "; break;
+        case OP_SUB:     o << "sub "; break;
+        case OP_MULT:    o << "mlt "; break;
+        case OP_DIV:     o << "div "; break;
+        case OP_RET:     o << "ret "; break;
+        case OP_CALL:    o << "br  "; break;
+    }
 }
 
-void Block::dump(ostream &o) {
-    o << label << ":" << endl;
-    for(InstList::iterator it = il.begin(); it != il.end(); it++) {
-        o << "\t";
-        (*it)->dump(o);
-        o << endl;
-    }
+void Inst::dump(std::ostream &o) {
+    if(rdst != 0)
+        o << "#" << rdst << " = ";
+    else if(ldst != "")
+        o << ldst << " = ";
+
+    dump_opcode(opcode, o);
+    dump_type(type, o);
+
+    if(rsrc1 != 0)
+        o << " #" << rsrc1;
+    else if(lsrc != "")
+        o << " " << lsrc;
+    else if(rdst != 0)
+        o << " " << vsrc;
+
+    if(rsrc2 != 0)
+        o << " #" << rsrc2;
 }
 
 void Prog::dump(ostream &o) {
@@ -35,46 +56,12 @@ void Prog::dump(ostream &o) {
     }
 }
 
-void Move::dump(ostream &o) {
-    o << "#" << rdst << " = move" << dump_type(type) << " #" << rsrc;
-}
-
-void LoadImm::dump(ostream &o) {
-    o << "#" << rdst << " = ldimm" << dump_type(type) << " " << imm_src;
-}
-
-void Load::dump(ostream &o) {
-    o << "#" << rdst << " = load" << dump_type(type) << " " << label_src;
-}
-
-void Store::dump(ostream &o) {
-    o << "store" << dump_type(type) << " " << label_dst << ",#" << rsrc;
-}
-
-void Add::dump(ostream &o) {
-    o << "#" << rdst << " = add" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
-}
-
-void Sub::dump(ostream &o) {
-    o << "#" << rdst << " = sub" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
-}
-
-void Mult::dump(ostream &o) {
-    o << "#" << rdst << " = mult" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
-}
-
-void Div::dump(ostream &o) {
-    o << "#" << rdst << " = div" << dump_type(type) << " #" << rsrc1 << ",#" << rsrc2;
-}
-
-void Ret::dump(ostream &o) {
-    o << "ret";
-}
-
-void Call::dump(ostream &o) {
-    if(type == IRTYPE_VOID)
-        o << "call " << label;
-    else
-        o << "#" << rdst << " = call" << dump_type(type) << " " << label;
+void Block::dump(ostream &o) {
+    o << label << ":" << endl;
+    for(InstList::iterator it = il.begin(); it != il.end(); it++) {
+        o << "\t";
+        (*it)->dump(o);
+        o << endl;
+    }
 }
 

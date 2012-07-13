@@ -6,27 +6,39 @@
 
 namespace IR {
     typedef enum {
-        IRTYPE_VOID,
-        IRTYPE_U1,
-        IRTYPE_S1,
-        IRTYPE_U2,
-        IRTYPE_S2
+        TYPE_VOID,
+        TYPE_U1,
+        TYPE_S1,
+        TYPE_U2,
+        TYPE_S2
     } Type;
+
+    typedef enum {
+        OP_NOP,
+        OP_MOVE,
+        OP_LOADIMM,
+        OP_LOAD,
+        OP_STORE,
+        OP_ADD,
+        OP_SUB,
+        OP_MULT,
+        OP_DIV,
+        OP_RET,
+        OP_CALL
+    } Opcode;
 
     class Inst {
         public:
             Type type;
+            Opcode opcode;
+            int rdst;
+            int rsrc1;
+            int rsrc2;
+            std::string ldst;
+            std::string lsrc;
+            int vsrc;
 
-            Inst(Type type) : type(type) { }
-            virtual ~Inst() { }
-            virtual void dump(std::ostream &o) = 0;
-    };
-
-    class Comment : public Inst {
-        public:
-            std::string comment;
-
-            Comment(std::string comment) : Inst(IRTYPE_VOID), comment(comment) { }
+            Inst() : type(TYPE_VOID), opcode(OP_NOP), rdst(0), rsrc1(0), rsrc2(0), ldst(""), lsrc(""), vsrc(0) { }
             void dump(std::ostream &o);
     };
 
@@ -39,7 +51,7 @@ namespace IR {
 
             Block(std::string label) : label(label) { }
             ~Block();
-            void add_inst(Inst *i) { il.push_back(i); }
+            void add(Inst *i) { il.push_back(i); }
             void dump(std::ostream &o);
     };
 
@@ -51,99 +63,22 @@ namespace IR {
 
             ~Prog();
             void dump(std::ostream &o);
-            void add_block(Block *b) { bl.push_back(b); }
+            void add(Block *b) { bl.push_back(b); }
     };
 
-    class Move : public Inst {
+    class Build {
         public:
-            int rdst;
-            int rsrc;
-
-            Move(Type type, int rdst, int rsrc) : Inst(type), rdst(rdst), rsrc(rsrc) { }
-            void dump(std::ostream &o);
-    };
-
-    class LoadImm : public Inst {
-        public:
-            int rdst;
-            int imm_src;
-
-            LoadImm(Type type, int rdst, int imm_src) : Inst(type), rdst(rdst), imm_src(imm_src) { }
-            void dump(std::ostream &o);
-    };
-
-    class Load : public Inst {
-        public:
-            int rdst;
-            std::string label_src;
-
-            Load(Type type, int rdst, std::string label_src) : Inst(type), rdst(rdst), label_src(label_src) { }
-            void dump(std::ostream &o);
-    };
-
-    class Store : public Inst {
-        public:
-            std::string label_dst;
-            int rsrc;
-
-            Store(Type type, std::string label_dst, int rsrc) : Inst(type), label_dst(label_dst), rsrc(rsrc) { }
-            void dump(std::ostream &o);
-    };
-
-    class Add : public Inst {
-        public:
-            int rdst;
-            int rsrc1;
-            int rsrc2;
-
-            Add(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
-            void dump(std::ostream &o);
-    };
-
-    class Sub : public Inst {
-        public:
-            int rdst;
-            int rsrc1;
-            int rsrc2;
-
-            Sub(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
-            void dump(std::ostream &o);
-    };
-
-    class Mult : public Inst {
-        public:
-            int rdst;
-            int rsrc1;
-            int rsrc2;
-
-            Mult(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
-            void dump(std::ostream &o);
-    };
-
-    class Div : public Inst {
-        public:
-            int rdst;
-            int rsrc1;
-            int rsrc2;
-
-            Div(Type type, int rdst, int rsrc1, int rsrc2) : Inst(type), rdst(rdst), rsrc1(rsrc1), rsrc2(rsrc2) { }
-            void dump(std::ostream &o);
-    };
-
-    class Ret : public Inst {
-        public:
-            Ret() : Inst(IRTYPE_VOID) { }
-            void dump(std::ostream &o);
-    };
-
-    class Call : public Inst {
-        public:
-            int rdst;
-            std::string label;
-
-            Call(std::string label) : Inst(IRTYPE_VOID), label(label) { }
-            Call(Type type, int rdst, std::string label) : Inst(type), rdst(rdst), label(label) { }
-            void dump(std::ostream &o);
+            static Inst *nop();
+            static Inst *move(Type type, int rdst, int rsrc);
+            static Inst *loadimm(Type type, int rdst, int vsrc);
+            static Inst *load(Type type, int rdst, std::string &lsrc);
+            static Inst *store(Type type, std::string &ldst, int rsrc);
+            static Inst *add(Type type, int rdst, int rsrc1, int rsrc2);
+            static Inst *sub(Type type, int rdst, int rsrc1, int rsrc2);
+            static Inst *mult(Type type, int rdst, int rsrc1, int rsrc2);
+            static Inst *div(Type type, int rdst, int rsrc1, int rsrc2);
+            static Inst *retvoid();
+            static Inst *callvoid(std::string &lsrc);
     };
 }
 
