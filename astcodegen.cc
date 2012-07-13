@@ -126,7 +126,7 @@ int Sub::codegen(IR::Block *b, Environment *env) {
     int rsrc1 = e1->codegen(b, env);
     int rsrc2 = e2->codegen(b, env);
     int rdst = reg_count++;
-    b->add(IR::Build::add(get_irtype(), rdst, rsrc1, rsrc2));
+    b->add(IR::Build::sub(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
@@ -134,7 +134,7 @@ int Mult::codegen(IR::Block *b, Environment *env) {
     int rsrc1 = e1->codegen(b, env);
     int rsrc2 = e2->codegen(b, env);
     int rdst = reg_count++;
-    b->add(IR::Build::add(get_irtype(), rdst, rsrc1, rsrc2));
+    b->add(IR::Build::mult(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
@@ -142,7 +142,7 @@ int Div::codegen(IR::Block *b, Environment *env) {
     int rsrc1 = e1->codegen(b, env);
     int rsrc2 = e2->codegen(b, env);
     int rdst = reg_count++;
-    b->add(IR::Build::add(get_irtype(), rdst, rsrc1, rsrc2));
+    b->add(IR::Build::div(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
