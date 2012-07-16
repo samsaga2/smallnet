@@ -7,6 +7,7 @@ using namespace IR;
 using namespace std;
 
 Machine::Machine() {
+    std::set<RealReg> byte_regs;
     byte_regs.insert(R_A);
     byte_regs.insert(R_B);
     byte_regs.insert(R_C);
@@ -19,65 +20,71 @@ Machine::Machine() {
     byte_regs.insert(R_IYH);
     byte_regs.insert(R_IYL);
 
+    std::set<RealReg> word_regs;
     word_regs.insert(R_BC);
     word_regs.insert(R_DE);
     word_regs.insert(R_HL);
     word_regs.insert(R_IX);
     word_regs.insert(R_IY);
 
-    candidates[OP_LOAD].push_back(InstRegCandidates(R_A , 0, 0));
-    candidates[OP_LOAD].push_back(InstRegCandidates(R_BC, 0, 0));
-    candidates[OP_LOAD].push_back(InstRegCandidates(R_DE, 0, 0));
-    candidates[OP_LOAD].push_back(InstRegCandidates(R_HL, 0, 0));
-    candidates[OP_LOAD].push_back(InstRegCandidates(R_IX, 0, 0));
-    candidates[OP_LOAD].push_back(InstRegCandidates(R_IY, 0, 0));
+    default_regs[TYPE_U1].insert(byte_regs.begin(), byte_regs.end());
+    default_regs[TYPE_S1].insert(byte_regs.begin(), byte_regs.end());
+    default_regs[TYPE_U2].insert(word_regs.begin(), word_regs.end());
+    default_regs[TYPE_S2].insert(word_regs.begin(), word_regs.end());
 
-    candidates[OP_STORE].push_back(InstRegCandidates(0, R_A , 0));
-    candidates[OP_STORE].push_back(InstRegCandidates(0, R_BC, 0));
-    candidates[OP_STORE].push_back(InstRegCandidates(0, R_DE, 0));
-    candidates[OP_STORE].push_back(InstRegCandidates(0, R_HL, 0));
-    candidates[OP_STORE].push_back(InstRegCandidates(0, R_IX, 0));
-    candidates[OP_STORE].push_back(InstRegCandidates(0, R_IY, 0));
+    constraints[OP_LOAD].push_back(InstRegConstraints(R_A , 0, 0));
+    constraints[OP_LOAD].push_back(InstRegConstraints(R_BC, 0, 0));
+    constraints[OP_LOAD].push_back(InstRegConstraints(R_DE, 0, 0));
+    constraints[OP_LOAD].push_back(InstRegConstraints(R_HL, 0, 0));
+    constraints[OP_LOAD].push_back(InstRegConstraints(R_IX, 0, 0));
+    constraints[OP_LOAD].push_back(InstRegConstraints(R_IY, 0, 0));
 
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_B));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_C));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_D));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_E));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_H));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_L));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_IXH));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_IXL));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_IYH));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_A , R_A , R_IYL));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_HL, R_HL, R_BC));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_HL, R_HL, R_DE));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_IX, R_IX, R_BC));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_IX, R_IX, R_DE));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_IY, R_IY, R_BC));
-    candidates[OP_ADD].push_back(InstRegCandidates(R_IY, R_IY, R_DE));
+    constraints[OP_STORE].push_back(InstRegConstraints(0, R_A , 0));
+    constraints[OP_STORE].push_back(InstRegConstraints(0, R_BC, 0));
+    constraints[OP_STORE].push_back(InstRegConstraints(0, R_DE, 0));
+    constraints[OP_STORE].push_back(InstRegConstraints(0, R_HL, 0));
+    constraints[OP_STORE].push_back(InstRegConstraints(0, R_IX, 0));
+    constraints[OP_STORE].push_back(InstRegConstraints(0, R_IY, 0));
 
-    candidates[OP_SUB] = candidates[OP_ADD];
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_B));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_C));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_D));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_E));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_H));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_L));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IXH));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IXL));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IYH));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IYL));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_HL, R_HL, R_BC));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_HL, R_HL, R_DE));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_IX, R_IX, R_BC));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_IX, R_IX, R_DE));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_IY, R_IY, R_BC));
+    constraints[OP_ADD].push_back(InstRegConstraints(R_IY, R_IY, R_DE));
+
+    constraints[OP_SUB] = constraints[OP_ADD];
 }
 
 void Machine::dump_reg(RealReg reg, std::ostream &o) {
     switch(reg) {
-        case R_BC: o << "bc"; break;
-        case R_DE: o << "de"; break;
-        case R_HL: o << "hl"; break;
-        case R_IX: o << "ix"; break;
-        case R_IY: o << "iy"; break;
-        case R_A: o << "a"; break;
-        case R_B: o << "b"; break;
-        case R_C: o << "c"; break;
-        case R_D: o << "d"; break;
-        case R_E: o << "e"; break;
-        case R_H: o << "h"; break;
-        case R_L: o << "l"; break;
+        case R_BC:  o << "bc"; break;
+        case R_DE:  o << "de"; break;
+        case R_HL:  o << "hl"; break;
+        case R_IX:  o << "ix"; break;
+        case R_IY:  o << "iy"; break;
+        case R_A:   o << "a"; break;
+        case R_B:   o << "b"; break;
+        case R_C:   o << "c"; break;
+        case R_D:   o << "d"; break;
+        case R_E:   o << "e"; break;
+        case R_H:   o << "h"; break;
+        case R_L:   o << "l"; break;
         case R_IXH: o << "ixh"; break;
         case R_IXL: o << "ixl"; break;
         case R_IYH: o << "iyh"; break;
         case R_IYL: o << "iyl"; break;
-        default: o << "#" << reg; break; // internal error
+        default:    o << "#" << reg; break; // internal error
     }
 }
 
@@ -126,21 +133,21 @@ void Machine::addGraphEdges(RegGraph &g, Block *b, BlockInfo &binfo) {
                     g.add_edge(*it2, *it3);
 }
 
-void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
-    // add g general candidates
-    map<VirtualReg, set<RealReg> > reg_candidates;
+void Machine::addGraphConstraints(RegGraph &g, Block *b, BlockInfo &binfo) {
+    // add g general constraints
+    map<VirtualReg, set<RealReg> > reg_constraints;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         VirtualReg rdst = (*it)->rdst;
         if(irtype == TYPE_VOID || rdst == 0)
             continue;
 
-        set<RealReg> regs = irtype == TYPE_U1 || irtype == TYPE_S1 ? byte_regs : word_regs;
+        set<RealReg> &regs = default_regs[irtype];
         for(set<RealReg>::iterator it = regs.begin(); it != regs.end(); it++)
-            reg_candidates[rdst].insert(*it);
+            reg_constraints[rdst].insert(*it);
     }
 
-    // intersect g candidates with dest candidates
+    // intersect g constraints with dest constraints
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         VirtualReg rdst = (*it)->rdst;
@@ -148,12 +155,12 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
         if(irtype == TYPE_VOID || rdst == 0)
             continue;
 
-        RegCandidates &c = candidates[iropcode];
+        RegConstraints &c = constraints[iropcode];
         if(c.size() == 0)
             continue;
 
         set<RealReg> dst_cands;
-        for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
+        for(RegConstraints::iterator it2 = c.begin(); it2 != c.end(); it2++)
             dst_cands.insert(it2->dst);
 
         if(dst_cands.size() == 0)
@@ -161,13 +168,13 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
 
         set<RealReg> new_cands;
         set_intersection(
-            reg_candidates[rdst].begin(), reg_candidates[rdst].end(),
+            reg_constraints[rdst].begin(), reg_constraints[rdst].end(),
             dst_cands.begin(), dst_cands.end(),
             inserter(new_cands, new_cands.end()));
-        reg_candidates[rdst] = new_cands;
+        reg_constraints[rdst] = new_cands;
     }
     
-    // intersect g candidates with src1 candidates
+    // intersect g constraints with src1 constraints
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         VirtualReg rdst = (*it)->rdst;
@@ -176,28 +183,28 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
         if(irtype == TYPE_VOID || rsrc1 == 0)
             continue;
 
-        set<RealReg> dstc = reg_candidates[rdst];
+        set<RealReg> dstc = reg_constraints[rdst];
 
-        RegCandidates &c = candidates[iropcode];
+        RegConstraints &c = constraints[iropcode];
         if(c.size() == 0)
             continue;
 
-        // reg src candidates
+        // reg src constraints
         set<RealReg> src_cands;
-        for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
+        for(RegConstraints::iterator it2 = c.begin(); it2 != c.end(); it2++)
             if(dstc.size() == 0 || dstc.find(it2->dst) != dstc.end())
                 src_cands.insert(it2->src1);
 
         // intersection
         set<RealReg> new_cands;
         set_intersection(
-            reg_candidates[rsrc1].begin(), reg_candidates[rsrc1].end(),
+            reg_constraints[rsrc1].begin(), reg_constraints[rsrc1].end(),
             src_cands.begin(), src_cands.end(),
             inserter(new_cands, new_cands.end()));
-        reg_candidates[rsrc1] = new_cands;
+        reg_constraints[rsrc1] = new_cands;
     }
     
-    // intersect g candidates with src2 candidates
+    // intersect g constraints with src2 constraints
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         VirtualReg rdst = (*it)->rdst;
@@ -206,29 +213,29 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
         if(irtype == TYPE_VOID || rsrc2 == 0)
             continue;
 
-        set<RealReg> dstc = reg_candidates[rdst];
+        set<RealReg> dstc = reg_constraints[rdst];
 
-        RegCandidates &c = candidates[iropcode];
+        RegConstraints &c = constraints[iropcode];
         if(c.size() == 0)
             continue;
 
-        // reg src candidates
+        // reg src constraints
         set<RealReg> src_cands;
-        for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
+        for(RegConstraints::iterator it2 = c.begin(); it2 != c.end(); it2++)
             if(dstc.size() == 0 || dstc.find(it2->dst) != dstc.end())
                 src_cands.insert(it2->src2);
 
         // intersection
         set<RealReg> new_cands;
         set_intersection(
-            reg_candidates[rsrc2].begin(), reg_candidates[rsrc2].end(),
+            reg_constraints[rsrc2].begin(), reg_constraints[rsrc2].end(),
             src_cands.begin(), src_cands.end(),
             inserter(new_cands, new_cands.end()));
-        reg_candidates[rsrc2] = new_cands;
+        reg_constraints[rsrc2] = new_cands;
     }
 
-    // add candidates
-    for(map<VirtualReg, set<RealReg> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
+    // add constraints
+    for(map<VirtualReg, set<RealReg> >::iterator it = reg_constraints.begin(); it != reg_constraints.end(); it++)
         for(set<RealReg>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
             g.add_reg_candidate(it->first, *it2);
 }
@@ -239,7 +246,7 @@ Machine::HardRegs Machine::regallocator(Block *b) {
     RegGraph graph(this);
     addGraphNodes(graph, b);
     addGraphEdges(graph, b, binfo);
-    addGraphCandidates(graph, b, binfo);
+    addGraphConstraints(graph, b, binfo);
 
     // colorize graph
     if(!graph.colorize()) {
@@ -318,18 +325,6 @@ void Machine::asmgen(HardRegs &hardregs, IR::Block *b) {
 
 void Machine::codegen(Block *b) {
     HardRegs final = regallocator(b);
-    
-/*
-#if DEBUG
-    // mostrar colores elegidos
-    for(HardRegs::iterator it = final.begin(); it != final.end(); it++) {
-        cout << "final reg for #" << it->first << " -> ";
-        dump_reg(it->second, cout);
-        cout << endl;
-    }
-#endif
-*/
-
     asmgen(final, b);
 }
 
