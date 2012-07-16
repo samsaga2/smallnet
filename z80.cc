@@ -1,11 +1,31 @@
 #include "z80.h"
 #include "reggraph.h"
+#include <algorithm>
+#include <iterator>
 
 using namespace Z80;
 using namespace IR;
 using namespace std;
 
 Machine::Machine() {
+    byte_regs.insert(R_A);
+    byte_regs.insert(R_B);
+    byte_regs.insert(R_C);
+    byte_regs.insert(R_D);
+    byte_regs.insert(R_E);
+    byte_regs.insert(R_H);
+    byte_regs.insert(R_L);
+    byte_regs.insert(R_IXH);
+    byte_regs.insert(R_IXL);
+    byte_regs.insert(R_IYH);
+    byte_regs.insert(R_IYL);
+
+    word_regs.insert(R_BC);
+    word_regs.insert(R_DE);
+    word_regs.insert(R_HL);
+    word_regs.insert(R_IX);
+    word_regs.insert(R_IY);
+
     candidates[OP_LOAD].push_back(InstRegCandidates(R_A , 0, 0));
     candidates[OP_LOAD].push_back(InstRegCandidates(R_BC, 0, 0));
     candidates[OP_LOAD].push_back(InstRegCandidates(R_DE, 0, 0));
@@ -58,7 +78,7 @@ void Machine::dump_reg(int reg, std::ostream &o) {
         case R_IXL: o << "ixl"; break;
         case R_IYH: o << "iyh"; break;
         case R_IYL: o << "iyl"; break;
-        default: o << "??"; break; // internal error
+        default: o << "#" << reg; break; // internal error
     }
 }
 
@@ -109,41 +129,110 @@ Machine::HardRegs Machine::regallocator(Block *b) {
                 if(*it2 != *it3)
                     graph.add_edge(*it2, *it3);
 
-    // add graph candidates
+    // add graph general candidates
+    map<int, set<int> > reg_candidates;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
-        // add candidates
         Type irtype = (*it)->type;
         int rdst = (*it)->rdst;
         if(irtype == TYPE_VOID || rdst == 0)
             continue;
 
-        switch(irtype) {
-            case TYPE_VOID: break; // only for warning
-            case TYPE_U1:
-            case TYPE_S1:
-                graph.add_reg_candidate(rdst, R_A);
-                graph.add_reg_candidate(rdst, R_B);
-                graph.add_reg_candidate(rdst, R_C);
-                graph.add_reg_candidate(rdst, R_D);
-                graph.add_reg_candidate(rdst, R_E);
-                graph.add_reg_candidate(rdst, R_H);
-                graph.add_reg_candidate(rdst, R_L);
-                graph.add_reg_candidate(rdst, R_IXH);
-                graph.add_reg_candidate(rdst, R_IXL);
-                graph.add_reg_candidate(rdst, R_IYH);
-                graph.add_reg_candidate(rdst, R_IYL);
-                break;
-
-            case TYPE_U2:
-            case TYPE_S2:
-                graph.add_reg_candidate(rdst, R_BC);
-                graph.add_reg_candidate(rdst, R_DE);
-                graph.add_reg_candidate(rdst, R_HL);
-                graph.add_reg_candidate(rdst, R_IX);
-                graph.add_reg_candidate(rdst, R_IY);
-                break;
-        }
+        set<int> regs = irtype == TYPE_U1 || irtype == TYPE_S1 ? byte_regs : word_regs;
+        for(set<int>::iterator it = regs.begin(); it != regs.end(); it++)
+            reg_candidates[rdst].insert(*it);
     }
+
+    // intersect graph candidates with dest candidates
+    for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
+        Type irtype = (*it)->type;
+        int rdst = (*it)->rdst;
+        Opcode iropcode = (*it)->opcode;
+        if(irtype == TYPE_VOID || rdst == 0)
+            continue;
+
+        RegCandidates &c = candidates[iropcode];
+        if(c.size() == 0)
+            continue;
+
+        set<int> dst_cands;
+        for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
+            dst_cands.insert(it2->dst);
+
+        if(dst_cands.size() == 0)
+            continue;
+
+        set<int> new_cands;
+        set_intersection(
+            reg_candidates[rdst].begin(), reg_candidates[rdst].end(),
+            dst_cands.begin(), dst_cands.end(),
+            inserter(new_cands, new_cands.end()));
+        reg_candidates[rdst] = new_cands;
+    }
+    
+    // intersect graph candidates with src1 candidates
+    for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
+        Type irtype = (*it)->type;
+        int rdst = (*it)->rdst;
+        int rsrc1 = (*it)->rsrc1;
+        Opcode iropcode = (*it)->opcode;
+        if(irtype == TYPE_VOID || rsrc1 == 0)
+            continue;
+
+        set<int> dstc = reg_candidates[rdst];
+
+        RegCandidates &c = candidates[iropcode];
+        if(c.size() == 0)
+            continue;
+
+        // reg src candidates
+        set<int> src_cands;
+        for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
+            if(dstc.size() == 0 || dstc.find(it2->dst) != dstc.end())
+                src_cands.insert(it2->src1);
+
+        // intersection
+        set<int> new_cands;
+        set_intersection(
+            reg_candidates[rsrc1].begin(), reg_candidates[rsrc1].end(),
+            src_cands.begin(), src_cands.end(),
+            inserter(new_cands, new_cands.end()));
+        reg_candidates[rsrc1] = new_cands;
+    }
+    
+    // intersect graph candidates with src2 candidates
+    for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
+        Type irtype = (*it)->type;
+        int rdst = (*it)->rdst;
+        int rsrc2 = (*it)->rsrc2;
+        Opcode iropcode = (*it)->opcode;
+        if(irtype == TYPE_VOID || rsrc2 == 0)
+            continue;
+
+        set<int> dstc = reg_candidates[rdst];
+
+        RegCandidates &c = candidates[iropcode];
+        if(c.size() == 0)
+            continue;
+
+        // reg src candidates
+        set<int> src_cands;
+        for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
+            if(dstc.size() == 0 || dstc.find(it2->dst) != dstc.end())
+                src_cands.insert(it2->src2);
+
+        // intersection
+        set<int> new_cands;
+        set_intersection(
+            reg_candidates[rsrc2].begin(), reg_candidates[rsrc2].end(),
+            src_cands.begin(), src_cands.end(),
+            inserter(new_cands, new_cands.end()));
+        reg_candidates[rsrc2] = new_cands;
+    }
+
+    // add candidates
+    for(map<int, set<int> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
+        for(set<int>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
+            graph.add_reg_candidate(it->first, *it2);
 
     // colorize graph
     if(!graph.colorize()) {
@@ -154,9 +243,76 @@ Machine::HardRegs Machine::regallocator(Block *b) {
     return graph.vertex_final;
 }
 
+void Machine::asmgen(HardRegs &hardregs, Inst *inst) {
+    switch(inst->opcode) {
+        case OP_NOP:
+            cout << "\tnop" << endl;
+            break;
+        case OP_MOVE:
+            cout << "\tld ";
+            dump_reg(hardregs[inst->rdst], cout);
+            cout << ",";
+            dump_reg(hardregs[inst->rdst], cout);
+            cout << endl;
+            break;
+        case OP_LOADIMM:
+            cout << "\tld ";
+            dump_reg(hardregs[inst->rdst], cout);
+            cout << "," << inst->vsrc;
+            cout << endl;
+            break;
+        case OP_LOAD:
+            cout << "\tld ";
+            dump_reg(hardregs[inst->rdst], cout);
+            cout << ",(" << inst->lsrc << ")";
+            cout << endl;
+            break;
+        case OP_STORE:
+            cout << "\tld ";
+            cout << "(" << inst->ldst << "),";
+            dump_reg(hardregs[inst->rsrc1], cout);
+            cout << endl;
+            break;
+        case OP_ADD:
+            cout << "\tadd ";
+            dump_reg(hardregs[inst->rdst], cout);
+            cout << ",";
+            dump_reg(hardregs[inst->rsrc2], cout);
+            cout << endl;
+            break;
+        case OP_SUB:
+            cout << "\tand a; clear carry flag" << endl;
+            cout << "\tsbc ";
+            dump_reg(hardregs[inst->rdst], cout);
+            cout << ",";
+            dump_reg(hardregs[inst->rsrc2], cout);
+            cout << endl;
+            break;
+        case OP_MULT:
+            cout << "\tcall _op_mul" << endl;
+            break;
+        case OP_DIV:
+            cout << "\tcall _op_div" << endl;
+            break;
+        case OP_RET:
+            cout << "\tret" << endl;
+            break;
+        case OP_CALL:
+            cout << "\tcall " << inst->lsrc << endl;
+            break;
+    }
+}
+
+void Machine::asmgen(HardRegs &hardregs, IR::Block *b) {
+    cout << b->label << ":" << endl;
+    for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++)
+        asmgen(hardregs, *it);
+}
+
 void Machine::codegen(Block *b) {
     HardRegs final = regallocator(b);
     
+/*
 #if DEBUG
     // mostrar colores elegidos
     for(HardRegs::iterator it = final.begin(); it != final.end(); it++) {
@@ -165,5 +321,8 @@ void Machine::codegen(Block *b) {
         cout << endl;
     }
 #endif
+*/
+
+    asmgen(final, b);
 }
 

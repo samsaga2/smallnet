@@ -38,9 +38,14 @@ namespace Z80 {
 
     class Machine : IMachine {
         private:
+            std::set<int> byte_regs;
+            std::set<int> word_regs;
+
             typedef std::map<int, int> HardRegs;
             HardRegs regallocator(IR::Block *b);
             void codegen(IR::Block *b);
+            void asmgen(HardRegs &hardregs, IR::Inst *inst);
+            void asmgen(HardRegs &hardregs, IR::Block *b);
 
         public:
             typedef std::vector<InstRegCandidates> RegCandidates;
