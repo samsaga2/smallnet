@@ -3,6 +3,7 @@
 #include <map>
 #include "ir.h"
 #include "machine.h"
+#include "reggraph.h"
 
 namespace Z80 {
     typedef enum {
@@ -42,6 +43,9 @@ namespace Z80 {
             std::set<int> word_regs;
 
             typedef std::map<int, int> HardRegs;
+            void addGraphNodes(RegGraph &g, IR::Block *b);
+            void addGraphEdges(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
+            void addGraphCandidates(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
             HardRegs regallocator(IR::Block *b);
             void codegen(IR::Block *b);
             void asmgen(HardRegs &hardregs, IR::Inst *inst);

@@ -1,5 +1,4 @@
 #include "z80.h"
-#include "reggraph.h"
 #include <algorithm>
 #include <iterator>
 
@@ -110,26 +109,25 @@ void Machine::codegen(Prog *irprog) {
         codegen(*it);
 }
 
-Machine::HardRegs Machine::regallocator(Block *b) {
-    BlockInfo binfo(b);
-    RegGraph graph(this);
-
-    // add nodes
+void Machine::addGraphNodes(RegGraph &g, Block *b) {
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Inst *inst = *it;
-        if(inst->rdst  != 0) graph.add_vertex(inst->rdst );
-        if(inst->rsrc1 != 0) graph.add_vertex(inst->rsrc1);
-        if(inst->rsrc2 != 0) graph.add_vertex(inst->rsrc2);
+        if(inst->rdst  != 0) g.add_vertex(inst->rdst );
+        if(inst->rsrc1 != 0) g.add_vertex(inst->rsrc1);
+        if(inst->rsrc2 != 0) g.add_vertex(inst->rsrc2);
     }
+}
 
-    // add edges
+void Machine::addGraphEdges(RegGraph &g, Block *b, BlockInfo &binfo) {
     for(BlockInfo::InstsLiveRegs::iterator it = binfo.live.begin(); it != binfo.live.end(); it++)
         for(BlockInfo::LiveRegs::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
             for(BlockInfo::LiveRegs::iterator it3 = it->second.begin(); it3 != it->second.end(); it3++)
                 if(*it2 != *it3)
-                    graph.add_edge(*it2, *it3);
+                    g.add_edge(*it2, *it3);
+}
 
-    // add graph general candidates
+void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
+    // add g general candidates
     map<int, set<int> > reg_candidates;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
@@ -142,7 +140,7 @@ Machine::HardRegs Machine::regallocator(Block *b) {
             reg_candidates[rdst].insert(*it);
     }
 
-    // intersect graph candidates with dest candidates
+    // intersect g candidates with dest candidates
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         int rdst = (*it)->rdst;
@@ -169,7 +167,7 @@ Machine::HardRegs Machine::regallocator(Block *b) {
         reg_candidates[rdst] = new_cands;
     }
     
-    // intersect graph candidates with src1 candidates
+    // intersect g candidates with src1 candidates
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         int rdst = (*it)->rdst;
@@ -199,7 +197,7 @@ Machine::HardRegs Machine::regallocator(Block *b) {
         reg_candidates[rsrc1] = new_cands;
     }
     
-    // intersect graph candidates with src2 candidates
+    // intersect g candidates with src2 candidates
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         int rdst = (*it)->rdst;
@@ -232,7 +230,16 @@ Machine::HardRegs Machine::regallocator(Block *b) {
     // add candidates
     for(map<int, set<int> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
         for(set<int>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
-            graph.add_reg_candidate(it->first, *it2);
+            g.add_reg_candidate(it->first, *it2);
+}
+
+Machine::HardRegs Machine::regallocator(Block *b) {
+    BlockInfo binfo(b);
+
+    RegGraph graph(this);
+    addGraphNodes(graph, b);
+    addGraphEdges(graph, b, binfo);
+    addGraphCandidates(graph, b, binfo);
 
     // colorize graph
     if(!graph.colorize()) {
