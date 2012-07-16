@@ -27,8 +27,9 @@ class Environment
 
     public:
         Declarations *decl;
+        int errors;
 
-        Environment(Declarations *decl) : decl(decl) { }
+        Environment(Declarations *decl) : decl(decl), errors(0) { }
 
         void push_namespace(AST::Namespace *ns);
         void pop_namespace();

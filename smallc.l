@@ -33,7 +33,7 @@ extern "C" int yylex();
 0b[0-1]+                 { yylval.i = (int)strtol(yytext + 2, NULL, 2); return INT; }
 0x[0-9a-fa-f]+           { yylval.i = (int)strtol(yytext + 2, NULL, 16); return INT; }
 [0-9]+                   { yylval.i = (int)strtol(yytext, NULL, 10); return INT; }
-[a-zA-Z_][a-zA-Z_0-9\.]* { std::cout << yytext << std::endl; yylval.s = new std::string(yytext); return ID; }
+[a-zA-Z_][a-zA-Z_0-9\.]* { yylval.s = new std::string(yytext); return ID; }
 
 \/\/.*                   ;
 \/\*                     BEGIN(COMMENTS);

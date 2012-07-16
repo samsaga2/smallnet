@@ -1,6 +1,7 @@
 Differences with real c#:
 * no garbage collector (you must use dispose method)
 * vars has not defaults values (for optimization proposes)
+* TODO type casting
 * TODO static methods
 * TODO register spilling
 * TODO class tags
@@ -12,4 +13,5 @@ Differences with real c#:
 * TODO strings
 * TODO conditionals and loops
 * TODO memory manager
+* TODO use pragmas for create roms
 

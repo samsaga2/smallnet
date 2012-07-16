@@ -6,6 +6,8 @@
 #include "parse.h"
 #include "z80.h"
 
+using namespace std;
+
 int main() {
     // parse
     AST::Program *astprog = parse("test.sc");
@@ -20,10 +22,15 @@ int main() {
     Environment *env = new Environment(decl);
     astprog->semant(env);
 
+    if(env->errors != 0) {
+        cout << env->errors << " errors found" << endl;
+        return 2;
+    }
+
 #if DEBUG
     // debug
-    std::cout << std::endl << "// AST" << std::endl;
-    astprog->dump(std::cout);
+    cout << endl << "// AST" << endl;
+    astprog->dump(cout);
 #endif
 
     // code gen
@@ -31,8 +38,8 @@ int main() {
 
 #if DEBUG
     // debug
-    std::cout << std::endl << "// IR" << std::endl;
-    irprog->dump(std::cout);
+    cout << endl << "// IR" << endl;
+    irprog->dump(cout);
 #endif
 
     // optimizations

@@ -16,7 +16,8 @@ void Program::semant(Environment *env) {
 void Object::semant(Environment *env) {
     EnvironmentVar* var = env->find_var(id);
     if(var == NULL) {
-        std::cerr << linenum << ": `" << id << "' undefined" << std::endl;
+        env->errors++;
+        cerr << linenum << ": `" << id << "' undefined" << endl;
         type = "int";
     } else
         type = var->type;
@@ -35,8 +36,10 @@ void FieldFeature::semant(Environment *env) {
         return;
 
     expr->semant(env);
-    if(expr->type != decl_type)
-        std::cerr << linenum << ": Non-matching types `" << expr->type << "' and `" << decl_type << "'" << std::endl;
+    if(expr->type != decl_type) {
+        env->errors++;
+        cerr << linenum << ": Non-matching types `" << expr->type << "' and `" << decl_type << "'" << endl;
+    }
 }
 
 void MethodFeature::semant(Environment *env) {
@@ -69,7 +72,8 @@ void BinOp::semant(Environment *env) {
     e1->semant(env);
     e2->semant(env);
     if(e1->type != e2->type) {
-        std::cerr << linenum << ": Non-matching types `" << e1->type << "' and `" << e2->type << "'" << std::endl;
+        env->errors++;
+        cerr << linenum << ": Non-matching types `" << e1->type << "' and `" << e2->type << "'" << endl;
         type = "int";
     } else
         type = e1->type;
