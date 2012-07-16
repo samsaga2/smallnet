@@ -37,10 +37,10 @@ namespace Z80 {
 
     class Machine : IMachine {
         private:
-            std::set<int> byte_regs;
-            std::set<int> word_regs;
+            std::set<RealReg> byte_regs;
+            std::set<RealReg> word_regs;
 
-            typedef std::map<IR::VirtualReg, int> HardRegs;
+            typedef std::map<IR::VirtualReg, RealReg> HardRegs;
             void addGraphNodes(RegGraph &g, IR::Block *b);
             void addGraphEdges(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
             void addGraphCandidates(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
@@ -56,8 +56,8 @@ namespace Z80 {
             OpcodeRegCandidates candidates;
 
             Machine();
-            void dump_reg(int reg, std::ostream &o);
-            std::set<int> get_regs_by_mask(int reg_mask);
+            void dump_reg(RealReg reg, std::ostream &o);
+            std::set<RealReg> get_regs_by_mask(RealReg reg_mask);
             void codegen(IR::Prog *irprog);
     };
 }

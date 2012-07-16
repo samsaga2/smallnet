@@ -59,7 +59,7 @@ Machine::Machine() {
     candidates[OP_SUB] = candidates[OP_ADD];
 }
 
-void Machine::dump_reg(int reg, std::ostream &o) {
+void Machine::dump_reg(RealReg reg, std::ostream &o) {
     switch(reg) {
         case R_BC: o << "bc"; break;
         case R_DE: o << "de"; break;
@@ -81,8 +81,8 @@ void Machine::dump_reg(int reg, std::ostream &o) {
     }
 }
 
-set<int> Machine::get_regs_by_mask(int reg_mask) {
-    set<int> s;
+set<RealReg> Machine::get_regs_by_mask(RealReg reg_mask) {
+    set<RealReg> s;
 
     if(reg_mask & R_A  ) s.insert(R_A);
     if(reg_mask & R_B  ) s.insert(R_B);
@@ -128,15 +128,15 @@ void Machine::addGraphEdges(RegGraph &g, Block *b, BlockInfo &binfo) {
 
 void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     // add g general candidates
-    map<VirtualReg, set<int> > reg_candidates;
+    map<VirtualReg, set<RealReg> > reg_candidates;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
         VirtualReg rdst = (*it)->rdst;
         if(irtype == TYPE_VOID || rdst == 0)
             continue;
 
-        set<int> regs = irtype == TYPE_U1 || irtype == TYPE_S1 ? byte_regs : word_regs;
-        for(set<int>::iterator it = regs.begin(); it != regs.end(); it++)
+        set<RealReg> regs = irtype == TYPE_U1 || irtype == TYPE_S1 ? byte_regs : word_regs;
+        for(set<RealReg>::iterator it = regs.begin(); it != regs.end(); it++)
             reg_candidates[rdst].insert(*it);
     }
 
@@ -152,14 +152,14 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
         if(c.size() == 0)
             continue;
 
-        set<int> dst_cands;
+        set<RealReg> dst_cands;
         for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
             dst_cands.insert(it2->dst);
 
         if(dst_cands.size() == 0)
             continue;
 
-        set<int> new_cands;
+        set<RealReg> new_cands;
         set_intersection(
             reg_candidates[rdst].begin(), reg_candidates[rdst].end(),
             dst_cands.begin(), dst_cands.end(),
@@ -176,20 +176,20 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
         if(irtype == TYPE_VOID || rsrc1 == 0)
             continue;
 
-        set<int> dstc = reg_candidates[rdst];
+        set<RealReg> dstc = reg_candidates[rdst];
 
         RegCandidates &c = candidates[iropcode];
         if(c.size() == 0)
             continue;
 
         // reg src candidates
-        set<int> src_cands;
+        set<RealReg> src_cands;
         for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
             if(dstc.size() == 0 || dstc.find(it2->dst) != dstc.end())
                 src_cands.insert(it2->src1);
 
         // intersection
-        set<int> new_cands;
+        set<RealReg> new_cands;
         set_intersection(
             reg_candidates[rsrc1].begin(), reg_candidates[rsrc1].end(),
             src_cands.begin(), src_cands.end(),
@@ -206,20 +206,20 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
         if(irtype == TYPE_VOID || rsrc2 == 0)
             continue;
 
-        set<int> dstc = reg_candidates[rdst];
+        set<RealReg> dstc = reg_candidates[rdst];
 
         RegCandidates &c = candidates[iropcode];
         if(c.size() == 0)
             continue;
 
         // reg src candidates
-        set<int> src_cands;
+        set<RealReg> src_cands;
         for(RegCandidates::iterator it2 = c.begin(); it2 != c.end(); it2++)
             if(dstc.size() == 0 || dstc.find(it2->dst) != dstc.end())
                 src_cands.insert(it2->src2);
 
         // intersection
-        set<int> new_cands;
+        set<RealReg> new_cands;
         set_intersection(
             reg_candidates[rsrc2].begin(), reg_candidates[rsrc2].end(),
             src_cands.begin(), src_cands.end(),
@@ -228,8 +228,8 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     }
 
     // add candidates
-    for(map<VirtualReg, set<int> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
-        for(set<int>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
+    for(map<VirtualReg, set<RealReg> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
+        for(set<RealReg>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
             g.add_reg_candidate(it->first, *it2);
 }
 

@@ -4,22 +4,23 @@
 #include <iterator>
 
 using namespace std;
+using namespace IR;
 
 void RegGraph::clear() {
     edges.clear();
     vertex_colors.clear();
 }
 
-void RegGraph::add_vertex(int irreg) {
+void RegGraph::add_vertex(VirtualReg irreg) {
     vertices.insert(irreg);
 }
 
-void RegGraph::add_edge(int irreg1, int irreg2) {
+void RegGraph::add_edge(VirtualReg irreg1, VirtualReg irreg2) {
     edges[irreg1].insert(irreg2);
     edges[irreg2].insert(irreg1);
 }
 
-void RegGraph::add_reg_candidate(int irreg, int mreg) {
+void RegGraph::add_reg_candidate(VirtualReg irreg, RealReg mreg) {
     vertex_colors[irreg].insert(mreg);
 }
 
@@ -48,15 +49,15 @@ bool RegGraph::colorize() {
     // colorize
     EdgeMap e = edges;
     for(PairedVerts::iterator it = v.begin(); it != v.end(); it++) {
-        int irreg = it->second;
-        set<Color> candidates = vertex_colors[irreg];
+        VirtualReg irreg = it->second;
+        set<RealReg> candidates = vertex_colors[irreg];
         Vertices &ve = e[irreg];
         for(Vertices::iterator it2 = ve.begin(); it2 != ve.end(); it2++) {
-            int irreg_edge = *it2;
-            int irreg_final = vertex_final[irreg_edge];
+            VirtualReg irreg_edge = *it2;
+            RealReg irreg_final = vertex_final[irreg_edge];
             if(irreg_final != 0) {
-                set<int> irreg_regs = machine->get_regs_by_mask(irreg_final);
-                set<int> result;
+                set<RealReg> irreg_regs = machine->get_regs_by_mask(irreg_final);
+                set<RealReg> result;
                 set_difference(
                     candidates.begin(), candidates.end(),
                     irreg_regs.begin(), irreg_regs.end(),
