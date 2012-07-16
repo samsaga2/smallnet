@@ -5,7 +5,9 @@ FLEX = flex
 BISON = bison
 LEXER = smallc.l
 PARSER = smallc.y
-OBJECTS = smallc.tab.o lex.yy.o ast.o astcodegen.o astdeclare.o astdump.o astsemant.o decl.o env.o irdump.o labels.o main.o ir.o
+OBJECTS = smallc.tab.o lex.yy.o ast.o astcodegen.o astdeclare.o \
+		  astdump.o astsemant.o decl.o env.o irdump.o labels.o \
+		  main.o ir.o irbuild.o z80.o reggraph.o
 
 all: smallc tags
 

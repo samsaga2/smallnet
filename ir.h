@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <map>
 
 namespace IR {
     typedef enum {
@@ -53,6 +54,15 @@ namespace IR {
             ~Block();
             void add(Inst *i) { il.push_back(i); }
             void dump(std::ostream &o);
+    };
+
+    class BlockInfo {
+        public:
+            typedef std::vector<int> LiveRegs;
+            typedef std::map<Inst*, LiveRegs> InstsLiveRegs;
+            InstsLiveRegs live;
+
+            BlockInfo(Block *b);
     };
 
     typedef std::vector<Block*> BlockList;

@@ -1,9 +1,10 @@
+#include <iostream>
 #include "ast.h"
 #include "decl.h"
 #include "env.h"
 #include "ir.h"
 #include "parse.h"
-#include <iostream>
+#include "z80.h"
 
 int main() {
     // parse
@@ -33,6 +34,13 @@ int main() {
     std::cout << std::endl << "// IR" << std::endl;
     irprog->dump(std::cout);
 #endif
+
+    // optimizations
+    // TODO
+
+    // machine code
+    Z80::Machine *m = new Z80::Machine();
+    m->codegen(irprog);
 
     return 0;
 }
