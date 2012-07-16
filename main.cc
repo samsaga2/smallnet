@@ -1,4 +1,6 @@
 #include <iostream>
+#include <getopt.h>
+#include <fstream>
 #include "ast.h"
 #include "decl.h"
 #include "env.h"
@@ -8,9 +10,16 @@
 
 using namespace std;
 
-int main() {
+int main(int argc, char **argv) {
+    if(argc == 1) {
+        cout << argv[0] << " file.sc" << endl;
+        return 0;
+    }
+
+    string filename(argv[1]);
+
     // parse
-    AST::Program *astprog = parse("test.sc");
+    AST::Program *astprog = parse(argv[1]);
     if(astprog == NULL)
         return 1;
 
@@ -29,8 +38,13 @@ int main() {
 
 #if DEBUG
     // debug
-    cout << endl << "// AST" << endl;
-    astprog->dump(cout);
+    string ast_filename(filename);
+    ast_filename += ".ast";
+
+    ofstream fast;
+    fast.open(ast_filename.c_str());
+    astprog->dump(fast);
+    fast.close();
 #endif
 
     // code gen
@@ -38,16 +52,27 @@ int main() {
 
 #if DEBUG
     // debug
-    cout << endl << "// IR" << endl;
-    irprog->dump(cout);
+    string ir_filename(filename);
+    ir_filename += ".ir";
+
+    ofstream fir;
+    fir.open(ir_filename.c_str());
+    irprog->dump(fir);
+    fir.close();
 #endif
 
     // optimizations
     // TODO
 
     // machine code
+    string asm_filename(filename);
+    asm_filename += ".asm";
+
+    ofstream fasm;
+    fasm.open(asm_filename.c_str());
     Z80::Machine *m = new Z80::Machine();
-    m->codegen(irprog);
+    m->codegen(irprog, fasm);
+    fasm.close();
 
     return 0;
 }

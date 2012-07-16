@@ -6,14 +6,14 @@
 using namespace IR;
 using namespace std;
 
-void BaseMachine::codegen(Prog *irprog) {
+void BaseMachine::codegen(Prog *irprog, ostream &o) {
     for(BlockList::iterator it = irprog->bl.begin(); it != irprog->bl.end(); it++)
-        codegen(*it);
+        codegen(*it, o);
 }
 
-void BaseMachine::codegen(Block *b) {
+void BaseMachine::codegen(Block *b, ostream &o) {
     RealRegMap final = regallocator(b);
-    asmgen(final, b);
+    asmgen(final, b, o);
 }
 
 set<RealReg> BaseMachine::get_regs_by_mask(RealReg reg_mask) {
@@ -168,9 +168,9 @@ BaseMachine::RealRegMap BaseMachine::regallocator(Block *b) {
     return graph.vertex_final;
 }
 
-void BaseMachine::asmgen(RealRegMap &hardregs, IR::Block *b) {
-    cout << b->label << ":" << endl;
+void BaseMachine::asmgen(RealRegMap &hardregs, IR::Block *b, ostream &o) {
+    o << b->label << ":" << endl;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++)
-        asmgen(hardregs, *it);
+        asmgen(hardregs, *it, o);
 }
 

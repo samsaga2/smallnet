@@ -27,8 +27,8 @@ namespace Z80 {
 #define R_IY (R_IYH | R_IYL)
 
     class Machine : public BaseMachine {
-        private:
-            void asmgen(RealRegMap &hardregs, IR::Inst *inst);
+        protected:
+            void asmgen(RealRegMap &hardregs, IR::Inst *inst, std::ostream &o);
 
         public:
             Machine();

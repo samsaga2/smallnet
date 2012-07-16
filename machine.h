@@ -32,13 +32,13 @@ class BaseMachine {
         void add_graph_edges(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
         void add_graph_constraints(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
         RealRegMap regallocator(IR::Block *b);
-        void codegen(IR::Block *b);
+        void codegen(IR::Block *b, std::ostream &o);
 
-        void asmgen(RealRegMap &hardregs, IR::Block *b);
-        virtual void asmgen(RealRegMap &hardregs, IR::Inst *inst) = 0;
+        void asmgen(RealRegMap &hardregs, IR::Block *b, std::ostream &o);
+        virtual void asmgen(RealRegMap &hardregs, IR::Inst *inst, std::ostream &o) = 0;
 
     public:
         std::set<RealReg> get_regs_by_mask(RealReg reg_mask);
-        void codegen(IR::Prog *irprog);
+        void codegen(IR::Prog *irprog, std::ostream &o);
 };
 

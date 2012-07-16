@@ -86,62 +86,62 @@ void Machine::dump_reg(RealReg reg, std::ostream &o) {
     }
 }
 
-void Machine::asmgen(RealRegMap &hardregs, Inst *inst) {
+void Machine::asmgen(RealRegMap &hardregs, Inst *inst, ostream &o) {
     switch(inst->opcode) {
         case OP_NOP:
-            //cout << "\tnop" << endl;
+            //o << "\tnop" << endl;
             break;
         case OP_MOVE:
-            cout << "\tld ";
-            dump_reg(hardregs[inst->rdst], cout);
-            cout << ",";
-            dump_reg(hardregs[inst->rdst], cout);
-            cout << endl;
+            o << "\tld ";
+            dump_reg(hardregs[inst->rdst], o);
+            o << ",";
+            dump_reg(hardregs[inst->rdst], o);
+            o << endl;
             break;
         case OP_LOADIMM:
-            cout << "\tld ";
-            dump_reg(hardregs[inst->rdst], cout);
-            cout << "," << inst->vsrc;
-            cout << endl;
+            o << "\tld ";
+            dump_reg(hardregs[inst->rdst], o);
+            o << "," << inst->vsrc;
+            o << endl;
             break;
         case OP_LOAD:
-            cout << "\tld ";
-            dump_reg(hardregs[inst->rdst], cout);
-            cout << ",(" << inst->lsrc << ")";
-            cout << endl;
+            o << "\tld ";
+            dump_reg(hardregs[inst->rdst], o);
+            o << ",(" << inst->lsrc << ")";
+            o << endl;
             break;
         case OP_STORE:
-            cout << "\tld ";
-            cout << "(" << inst->ldst << "),";
-            dump_reg(hardregs[inst->rsrc1], cout);
-            cout << endl;
+            o << "\tld ";
+            o << "(" << inst->ldst << "),";
+            dump_reg(hardregs[inst->rsrc1], o);
+            o << endl;
             break;
         case OP_ADD:
-            cout << "\tadd ";
-            dump_reg(hardregs[inst->rdst], cout);
-            cout << ",";
-            dump_reg(hardregs[inst->rsrc2], cout);
-            cout << endl;
+            o << "\tadd ";
+            dump_reg(hardregs[inst->rdst], o);
+            o << ",";
+            dump_reg(hardregs[inst->rsrc2], o);
+            o << endl;
             break;
         case OP_SUB:
-            cout << "\tand a; clear carry flag" << endl;
-            cout << "\tsbc ";
-            dump_reg(hardregs[inst->rdst], cout);
-            cout << ",";
-            dump_reg(hardregs[inst->rsrc2], cout);
-            cout << endl;
+            o << "\tand a; clear carry flag" << endl;
+            o << "\tsbc ";
+            dump_reg(hardregs[inst->rdst], o);
+            o << ",";
+            dump_reg(hardregs[inst->rsrc2], o);
+            o << endl;
             break;
         case OP_MULT:
-            cout << "\tcall _op_mul" << endl;
+            o << "\tcall _op_mul" << endl;
             break;
         case OP_DIV:
-            cout << "\tcall _op_div" << endl;
+            o << "\tcall _op_div" << endl;
             break;
         case OP_RET:
-            cout << "\tret" << endl;
+            o << "\tret" << endl;
             break;
         case OP_CALL:
-            cout << "\tcall " << inst->lsrc << endl;
+            o << "\tcall " << inst->lsrc << endl;
             break;
     }
 }

@@ -7,3 +7,6 @@ smallc.tab.cc
 smallc.tab.h
 tags
 smallc
+test.sc.asm
+test.sc.ast
+test.sc.ir

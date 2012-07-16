@@ -12,7 +12,7 @@ OBJECTS = smallc.tab.o lex.yy.o ast.o astcodegen.o astdeclare.o \
 all: smallc tags
 
 clean:
-	rm -f lex.yy.cc smallc.tab.cc smallc.tab.h *.o smallc smallc.output *.stackdump *.d tags smallc.exe
+	rm -f lex.yy.cc smallc.tab.cc smallc.tab.h *.o smallc smallc.output *.stackdump *.d tags smallc.exe test.sc.asm test.sc.ast test.sc.ir
 
 smallc: $(OBJECTS)
 	$(CC) $^ -o smallc $(CFLAGS) $(LINK)
