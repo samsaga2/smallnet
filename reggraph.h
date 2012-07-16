@@ -17,12 +17,12 @@ class RegGraph {
         Vertices vertices;
         EdgeMap edges;
         VertexColors vertex_colors;
-        IMachine *machine;
+        BaseMachine *machine;
 
     public:
         VertexFinal vertex_final;
 
-        RegGraph(IMachine *machine) : machine(machine) { }
+        RegGraph(BaseMachine *machine) : machine(machine) { }
         void clear();
         void add_vertex(IR::VirtualReg irreg);
         void add_edge(IR::VirtualReg irreg1, IR::VirtualReg irreg2);
