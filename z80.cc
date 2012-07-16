@@ -86,10 +86,10 @@ void Machine::dump_reg(RealReg reg, std::ostream &o) {
     }
 }
 
-void Machine::asmgen(HardRegs &hardregs, Inst *inst) {
+void Machine::asmgen(RealRegMap &hardregs, Inst *inst) {
     switch(inst->opcode) {
         case OP_NOP:
-            cout << "\tnop" << endl;
+            //cout << "\tnop" << endl;
             break;
         case OP_MOVE:
             cout << "\tld ";

@@ -28,7 +28,7 @@ namespace Z80 {
 
     class Machine : public BaseMachine {
         private:
-            void asmgen(HardRegs &hardregs, IR::Inst *inst);
+            void asmgen(RealRegMap &hardregs, IR::Inst *inst);
 
         public:
             Machine();
