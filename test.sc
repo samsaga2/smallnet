@@ -8,7 +8,7 @@ namespace Example.Tests
 
     static class Test2
     {
-        static int _j = 1+2+3+4;
-        static int _k = 3+4-5;
+        static int _j = 1+0x2+0b11+4;
+        static int _k = 4+5+6;
     }
 }

@@ -1,4 +1,5 @@
 #include <sstream>
+#include <cstdlib>
 #include "ast.h"
 #include "env.h"
 #include "ir.h"
