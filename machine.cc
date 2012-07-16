@@ -12,7 +12,7 @@ void BaseMachine::codegen(Prog *irprog) {
 }
 
 void BaseMachine::codegen(Block *b) {
-    HardRegs final = regallocator(b);
+    RealRegMap final = regallocator(b);
     asmgen(final, b);
 }
 
@@ -27,7 +27,7 @@ set<RealReg> BaseMachine::get_regs_by_mask(RealReg reg_mask) {
     return s;
 }
 
-void BaseMachine::addGraphNodes(RegGraph &g, Block *b) {
+void BaseMachine::add_graph_nodes(RegGraph &g, Block *b) {
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Inst *inst = *it;
         if(inst->rdst  != 0) g.add_vertex(inst->rdst );
@@ -36,7 +36,7 @@ void BaseMachine::addGraphNodes(RegGraph &g, Block *b) {
     }
 }
 
-void BaseMachine::addGraphEdges(RegGraph &g, Block *b, BlockInfo &binfo) {
+void BaseMachine::add_graph_edges(RegGraph &g, Block *b, BlockInfo &binfo) {
     for(BlockInfo::InstsLiveRegs::iterator it = binfo.live.begin(); it != binfo.live.end(); it++)
         for(BlockInfo::LiveRegs::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
             for(BlockInfo::LiveRegs::iterator it3 = it->second.begin(); it3 != it->second.end(); it3++)
@@ -44,7 +44,7 @@ void BaseMachine::addGraphEdges(RegGraph &g, Block *b, BlockInfo &binfo) {
                     g.add_edge(*it2, *it3);
 }
 
-void BaseMachine::addGraphConstraints(RegGraph &g, Block *b, BlockInfo &binfo) {
+void BaseMachine::add_graph_constraints(RegGraph &g, Block *b, BlockInfo &binfo) {
     // add g general constraints
     map<VirtualReg, set<RealReg> > reg_constraints;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
@@ -151,13 +151,13 @@ void BaseMachine::addGraphConstraints(RegGraph &g, Block *b, BlockInfo &binfo) {
             g.add_reg_candidate(it->first, *it2);
 }
 
-BaseMachine::HardRegs BaseMachine::regallocator(Block *b) {
+BaseMachine::RealRegMap BaseMachine::regallocator(Block *b) {
     BlockInfo binfo(b);
 
     RegGraph graph(this);
-    addGraphNodes(graph, b);
-    addGraphEdges(graph, b, binfo);
-    addGraphConstraints(graph, b, binfo);
+    add_graph_nodes(graph, b);
+    add_graph_edges(graph, b, binfo);
+    add_graph_constraints(graph, b, binfo);
 
     // colorize graph
     if(!graph.colorize()) {
@@ -168,7 +168,7 @@ BaseMachine::HardRegs BaseMachine::regallocator(Block *b) {
     return graph.vertex_final;
 }
 
-void BaseMachine::asmgen(HardRegs &hardregs, IR::Block *b) {
+void BaseMachine::asmgen(RealRegMap &hardregs, IR::Block *b) {
     cout << b->label << ":" << endl;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++)
         asmgen(hardregs, *it);

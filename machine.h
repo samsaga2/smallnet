@@ -21,21 +21,21 @@ class InstRegConstraints {
 class BaseMachine {
     protected:
         typedef std::map<IR::VirtualReg, std::set<RealReg> > DefaultRegs;
-        typedef std::map<IR::VirtualReg, RealReg> HardRegs;
+        typedef std::map<IR::VirtualReg, RealReg> RealRegMap;
         typedef std::vector<InstRegConstraints> RegConstraints;
         typedef std::map<IR::Opcode, RegConstraints> OpcodeRegConstraints;
 
         OpcodeRegConstraints constraints;
         DefaultRegs default_regs;
 
-        void addGraphNodes(RegGraph &g, IR::Block *b);
-        void addGraphEdges(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
-        void addGraphConstraints(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
-        HardRegs regallocator(IR::Block *b);
+        void add_graph_nodes(RegGraph &g, IR::Block *b);
+        void add_graph_edges(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
+        void add_graph_constraints(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
+        RealRegMap regallocator(IR::Block *b);
         void codegen(IR::Block *b);
 
-        void asmgen(HardRegs &hardregs, IR::Block *b);
-        virtual void asmgen(HardRegs &hardregs, IR::Inst *inst) = 0;
+        void asmgen(RealRegMap &hardregs, IR::Block *b);
+        virtual void asmgen(RealRegMap &hardregs, IR::Inst *inst) = 0;
 
     public:
         std::set<RealReg> get_regs_by_mask(RealReg reg_mask);
