@@ -15,7 +15,7 @@ Prog::~Prog() {
 }
 
 BlockInfo::BlockInfo(Block *b) {
-    std::set<int> live_regs;
+    std::set<VirtualReg> live_regs;
 
     live.clear();
     for(InstList::reverse_iterator it = b->il.rbegin(); it != b->il.rend(); it++) {
@@ -27,7 +27,7 @@ BlockInfo::BlockInfo(Block *b) {
         if(i->rsrc2 != 0)
             live_regs.insert(i->rsrc2);
 
-        live[i] = std::vector<int>(live_regs.begin(), live_regs.end());
+        live[i] = std::vector<VirtualReg>(live_regs.begin(), live_regs.end());
     }
 }
 

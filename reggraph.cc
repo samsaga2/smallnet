@@ -39,7 +39,7 @@ bool RegGraph::colorize() {
     vertex_final.clear();
 
     // sort vertices by edges count
-    typedef list<pair<size_t, Vertex> > PairedVerts;
+    typedef list<pair<size_t, IR::VirtualReg> > PairedVerts;
     PairedVerts v;
     for(Vertices::iterator it = vertices.begin(); it != vertices.end(); it++)
         v.push_back(make_pair(edges[*it].size(), *it));

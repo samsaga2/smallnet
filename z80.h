@@ -26,15 +26,13 @@ namespace Z80 {
 #define R_IX (R_IXH | R_IXL)
 #define R_IY (R_IYH | R_IYL)
 
-    typedef int RegCandidates;
-
     class InstRegCandidates {
         public:
-            RegCandidates dst;
-            RegCandidates src1;
-            RegCandidates src2;
+            IR::VirtualReg dst;
+            IR::VirtualReg src1;
+            IR::VirtualReg src2;
 
-            InstRegCandidates(int dst, int src1, int src2) : dst(dst), src1(src1), src2(src2) { }
+            InstRegCandidates(IR::VirtualReg dst, IR::VirtualReg src1, IR::VirtualReg src2) : dst(dst), src1(src1), src2(src2) { }
     };
 
     class Machine : IMachine {
@@ -42,7 +40,7 @@ namespace Z80 {
             std::set<int> byte_regs;
             std::set<int> word_regs;
 
-            typedef std::map<int, int> HardRegs;
+            typedef std::map<IR::VirtualReg, int> HardRegs;
             void addGraphNodes(RegGraph &g, IR::Block *b);
             void addGraphEdges(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);
             void addGraphCandidates(RegGraph &g, IR::Block *b, IR::BlockInfo &binfo);

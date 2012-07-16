@@ -4,17 +4,17 @@
 #include <set>
 #include <iostream>
 #include "machine.h"
+#include "ir.h"
 
 class RegGraph {
     private:
-        typedef int Vertex;
         typedef int Color;
 
-        typedef std::set<Vertex> Vertices;
+        typedef std::set<IR::VirtualReg> Vertices;
         typedef std::set<Color> Colors;
-        typedef std::map<Vertex, Vertices> EdgeMap;
-        typedef std::map<Vertex, Colors> VertexColors;
-        typedef std::map<Vertex, Color> VertexFinal;
+        typedef std::map<IR::VirtualReg, Vertices> EdgeMap;
+        typedef std::map<IR::VirtualReg, Colors> VertexColors;
+        typedef std::map<IR::VirtualReg, Color> VertexFinal;
 
         Vertices vertices;
         EdgeMap edges;

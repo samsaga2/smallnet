@@ -6,6 +6,8 @@
 #include <map>
 
 namespace IR {
+    typedef int VirtualReg;
+
     typedef enum {
         TYPE_VOID,
         TYPE_U1,
@@ -32,9 +34,9 @@ namespace IR {
         public:
             Type type;
             Opcode opcode;
-            int rdst;
-            int rsrc1;
-            int rsrc2;
+            VirtualReg rdst;
+            VirtualReg rsrc1;
+            VirtualReg rsrc2;
             std::string ldst;
             std::string lsrc;
             int vsrc;
@@ -58,7 +60,7 @@ namespace IR {
 
     class BlockInfo {
         public:
-            typedef std::vector<int> LiveRegs;
+            typedef std::vector<VirtualReg> LiveRegs;
             typedef std::map<Inst*, LiveRegs> InstsLiveRegs;
             InstsLiveRegs live;
 
@@ -79,14 +81,14 @@ namespace IR {
     class Build {
         public:
             static Inst *nop();
-            static Inst *move(Type type, int rdst, int rsrc);
-            static Inst *loadimm(Type type, int rdst, int vsrc);
-            static Inst *load(Type type, int rdst, std::string &lsrc);
-            static Inst *store(Type type, std::string &ldst, int rsrc);
-            static Inst *add(Type type, int rdst, int rsrc1, int rsrc2);
-            static Inst *sub(Type type, int rdst, int rsrc1, int rsrc2);
-            static Inst *mult(Type type, int rdst, int rsrc1, int rsrc2);
-            static Inst *div(Type type, int rdst, int rsrc1, int rsrc2);
+            static Inst *move(Type type, VirtualReg rdst, VirtualReg rsrc);
+            static Inst *loadimm(Type type, VirtualReg rdst, VirtualReg vsrc);
+            static Inst *load(Type type, VirtualReg rdst, std::string &lsrc);
+            static Inst *store(Type type, std::string &ldst, VirtualReg rsrc);
+            static Inst *add(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
+            static Inst *sub(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
+            static Inst *mult(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
+            static Inst *div(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *retvoid();
             static Inst *callvoid(std::string &lsrc);
     };

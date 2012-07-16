@@ -128,10 +128,10 @@ void Machine::addGraphEdges(RegGraph &g, Block *b, BlockInfo &binfo) {
 
 void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     // add g general candidates
-    map<int, set<int> > reg_candidates;
+    map<VirtualReg, set<int> > reg_candidates;
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
-        int rdst = (*it)->rdst;
+        VirtualReg rdst = (*it)->rdst;
         if(irtype == TYPE_VOID || rdst == 0)
             continue;
 
@@ -143,7 +143,7 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     // intersect g candidates with dest candidates
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
-        int rdst = (*it)->rdst;
+        VirtualReg rdst = (*it)->rdst;
         Opcode iropcode = (*it)->opcode;
         if(irtype == TYPE_VOID || rdst == 0)
             continue;
@@ -170,8 +170,8 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     // intersect g candidates with src1 candidates
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
-        int rdst = (*it)->rdst;
-        int rsrc1 = (*it)->rsrc1;
+        VirtualReg rdst = (*it)->rdst;
+        VirtualReg rsrc1 = (*it)->rsrc1;
         Opcode iropcode = (*it)->opcode;
         if(irtype == TYPE_VOID || rsrc1 == 0)
             continue;
@@ -200,8 +200,8 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     // intersect g candidates with src2 candidates
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Type irtype = (*it)->type;
-        int rdst = (*it)->rdst;
-        int rsrc2 = (*it)->rsrc2;
+        VirtualReg rdst = (*it)->rdst;
+        VirtualReg rsrc2 = (*it)->rsrc2;
         Opcode iropcode = (*it)->opcode;
         if(irtype == TYPE_VOID || rsrc2 == 0)
             continue;
@@ -228,7 +228,7 @@ void Machine::addGraphCandidates(RegGraph &g, Block *b, BlockInfo &binfo) {
     }
 
     // add candidates
-    for(map<int, set<int> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
+    for(map<VirtualReg, set<int> >::iterator it = reg_candidates.begin(); it != reg_candidates.end(); it++)
         for(set<int>::iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
             g.add_reg_candidate(it->first, *it2);
 }
