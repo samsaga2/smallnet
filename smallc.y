@@ -13,6 +13,7 @@ extern "C" int yyparse();
 extern "C" int yylex();
 extern "C" FILE *yyin;
 
+using namespace std;
 %}
 
 %union {
@@ -23,10 +24,13 @@ extern "C" FILE *yyin;
     AST::Class *cs;
     AST::ClassList *csl;
     AST::Program *p;
-    AST::FieldFeature *field;
+    AST::Feature *fe;
     AST::FeatureList *fl;
     AST::Expr *expr;
     AST::Integer *inte;
+    AST::Block *block;
+    AST::Arg *arg;
+    AST::ArgList *args;
 }
 
 %token ERROR NS CLASS PUBLIC PRIVATE PROTECTED STATIC PLUS MINUS SUB DIV
@@ -38,10 +42,13 @@ extern "C" FILE *yyin;
 %type <ns> ns
 %type <csl> csl
 %type <cs> cs
-%type <field> field
+%type <fe> field feature method
 %type <fl> features
-%type <expr> expr binop term
+%type <expr> expr binop term stmt
 %type <inte> int
+%type <block> block stmts
+%type <arg> arg
+%type <args> args
 
 %start program
 
@@ -51,7 +58,7 @@ extern "C" FILE *yyin;
 %%
 
 program: nsl { program = new AST::Program(linenum, $1); }
-       | { program = new AST::Program(linenum); }
+       |     { program = new AST::Program(linenum); }
        ;
 
 nsl: ns { $$ = new AST::NamespaceList(); $$->push_back($<ns>1); }
@@ -59,10 +66,10 @@ nsl: ns { $$ = new AST::NamespaceList(); $$->push_back($<ns>1); }
    ;
 
 ns: NS ID '{' csl '}' { $$ = new AST::Namespace(linenum, *$2, $4); delete $2; }
-  | NS ID '{' '}' { $$ =  new AST::Namespace(linenum, *$2); delete $2; }
+  | NS ID '{' '}'     { $$ =  new AST::Namespace(linenum, *$2); delete $2; }
   ;
 
-csl: cs { $$ = new AST::ClassList(); $$->push_back($<cs>1); }
+csl: cs     { $$ = new AST::ClassList(); $$->push_back($<cs>1); }
    | csl cs { $1->push_back($<cs>2); }
    ;
 
@@ -72,9 +79,13 @@ cs: CLASS ID '{' '}'                    { $$ = new AST::Class(linenum, *$2, fals
   | STATIC CLASS ID '{' features '}'    { $$ = new AST::Class(linenum, *$3, $5, true); delete $3; }
   ;
 
-features: field { $$ = new AST::FeatureList(); $$->push_back($1); }
-        | features field { $1->push_back($2); }
+features: feature          { $$ = new AST::FeatureList(); $$->push_back($1); }
+        | features feature { $1->push_back($2); }
         ;
+
+feature: field  { $$ = $1; }
+       | method { $$ = $1; }
+       ;
 
 field: ID ID ';'                         { $$ = new AST::FieldFeature(linenum, *$2, *$1, NULL, false); delete $2; delete $1; }
      | STATIC ID ID ';'                  { $$ = new AST::FieldFeature(linenum, *$3, *$2, NULL, true); delete $3; delete $2; }
@@ -82,15 +93,40 @@ field: ID ID ';'                         { $$ = new AST::FieldFeature(linenum, *
      | STATIC ID ID '=' expr ';'         { $$ = new AST::FieldFeature(linenum, *$3, *$2, $5, true); delete $3; delete $2; }
      ;
 
-binop: expr PLUS expr { $$ = new AST::Plus(linenum, $1, $3); }
-     | expr MINUS expr { $$ = new AST::Sub(linenum, $1, $3); }
-     | expr MULT expr { $$ = new AST::Mult(linenum, $1, $3); }
-     | expr DIV expr { $$ = new AST::Div(linenum, $1, $3); }
+method: ID ID '(' args ')' block         { $$ = new AST::MethodFeature(linenum, *$2, *$1, $4, $6, false); delete $2; delete $1; }
+      | STATIC ID ID '(' args ')' block  { $$ = new AST::MethodFeature(linenum, *$3, *$2, $5, $7, true); delete $3; delete $2; }
+      | ID ID '(' ')' block              { $$ = new AST::MethodFeature(linenum, *$2, *$1, new AST::ArgList(), $5, false); delete $2; delete $1; }
+      | STATIC ID ID '(' ')' block       { $$ = new AST::MethodFeature(linenum, *$3, *$2, new AST::ArgList(), $6, true); delete $3; delete $2; }
+      ;
+
+args: arg           { $$ = new AST::ArgList(); $$->push_back($1); }
+    | args ',' arg { $1->push_back($3); }
+    ;
+
+arg: ID ID { $$ = new AST::Arg(*$2, *$1); delete $2; delete $1; }
+   ;
+
+block: '{' stmts '}' { $$ = $2; }
+     | '{' '}'       { $$ = new AST::Block(linenum); }
      ;
 
-term: int { $$ = $1; }
-    | '(' int  ')' { $$ = $2; }
-    | ID { $$ = new AST::Object(linenum, *$1); delete $1; }
+stmts: stmt       { $$ = new AST::Block(linenum); $$->sl->push_back($1); }
+     | stmts stmt { $1->sl->push_back($2); }
+     ;
+
+stmt: ID '=' expr ';'    { $$ = new AST::Assign(linenum, *$1, $3); delete $1; }
+    | ID ID '=' expr ';' { $$ = new AST::Decl(linenum, *$2, *$1, $4); delete $2; delete $1; }
+    ;
+
+binop: expr PLUS expr  { $$ = new AST::Plus(linenum, $1, $3); }
+     | expr MINUS expr { $$ = new AST::Sub(linenum, $1, $3); }
+     | expr MULT expr   { $$ = new AST::Mult(linenum, $1, $3); }
+     | expr DIV expr   { $$ = new AST::Div(linenum, $1, $3); }
+     ;
+
+term: int          { $$ = $1; }
+    | '(' expr ')' { $$ = $2; }
+    | ID           { $$ = new AST::Object(linenum, *$1); delete $1; }
     ;
 
 expr: binop
@@ -102,11 +138,14 @@ int: INT { $$ = new AST::Integer(linenum, $1); }
 
 %%
 
+int errors;
+
 AST::Program *parse(const char *filename) {
+    errors = 0;
     fname = filename;
     yyin = fopen(fname, "r");
     if(!yyin) {
-        std::cerr << "Error opening file `" << fname << "'." << std::endl;
+        cerr << "Error opening file `" << fname << "'." << endl;
         return NULL;
     }
 
@@ -117,11 +156,16 @@ AST::Program *parse(const char *filename) {
 
     fclose(yyin);
 
+    if(errors) {
+        cout << errors << " errors found" << endl;
+        exit(2);
+    }
+
     return program;
 }
 
 void yyerror(const char *s) {
-    std::cerr << fname << ":" << linenum << ": " << s << std::endl;
-    exit(-1);
+    cerr << fname << ":" << linenum << ": " << s << endl;
+    errors++;
 }
 

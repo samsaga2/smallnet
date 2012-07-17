@@ -79,3 +79,18 @@ void BinOp::semant(Environment *env) {
         type = e1->type;
 }
 
+void Assign::semant(Environment *env) {
+    expr->semant(env);
+    type = "void";
+}
+
+void Decl::semant(Environment *env) {
+    expr->semant(env);
+    if(decl_type != expr->type) {
+        env->errors++;
+        cerr << linenum << ": Non-matching types `" << decl_type << "' and `" << expr->type << "'" << endl;
+    }
+
+    type = "void";
+}
+

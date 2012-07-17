@@ -155,3 +155,19 @@ int Object::codegen(IR::Block *b, Environment *env) {
     return rdst;
 }
 
+int Assign::codegen(IR::Block *b, Environment *env) {
+    int rdst = reg_count++;
+    // TODO
+    string label("_molo_mogollon_");
+    b->add(IR::Build::load(get_irtype(), rdst, label));
+    return rdst;
+}
+
+int Decl::codegen(IR::Block *b, Environment *env) {
+    int rdst = reg_count++;
+    // TODO
+    string label("_molo_mogollon_");
+    b->add(IR::Build::load(get_irtype(), rdst, label));
+    return rdst;
+}
+
