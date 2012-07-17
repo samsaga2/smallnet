@@ -29,18 +29,20 @@ void Class::declare(Declarations *decl) {
 
 void FieldFeature::declare(Declarations *decl) {
     if(decl->get_current_cs()->is_static && !is_static)
-        std::cerr << linenum << ": Non-static field declared `" << id << "'" << std::endl;
+        cerr << linenum << ": Non-static field declared `" << id << "'" << endl;
 
-    // TODO duplicated fields
+    if(decl->exists_feature(id)) 
+        cerr << linenum << ": Already exists `" << id << "'" << endl;
 
     decl->add_field(this);
 }
 
 void MethodFeature::declare(Declarations *decl) {
     if(decl->get_current_cs()->is_static && !is_static)
-        std::cerr << linenum << ": Non-static method declared `" << id << "'" << std::endl;
+        cerr << linenum << ": Non-static method declared `" << id << "'" << endl;
 
-    // TODO duplicated methods
+    if(decl->exists_feature(id)) 
+        cerr << linenum << ": Already exists `" << id << "'" << endl;
 
     decl->add_method(this);
 }

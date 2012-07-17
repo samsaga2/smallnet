@@ -83,14 +83,14 @@ namespace IR {
             static Inst *nop();
             static Inst *move(Type type, VirtualReg rdst, VirtualReg rsrc);
             static Inst *loadimm(Type type, VirtualReg rdst, VirtualReg vsrc);
-            static Inst *load(Type type, VirtualReg rdst, std::string &lsrc);
-            static Inst *store(Type type, std::string &ldst, VirtualReg rsrc);
+            static Inst *load(Type type, VirtualReg rdst, std::string lsrc);
+            static Inst *store(Type type, std::string ldst, VirtualReg rsrc);
             static Inst *add(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *sub(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *mult(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *div(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *retvoid();
-            static Inst *callvoid(std::string &lsrc);
+            static Inst *callvoid(std::string lsrc);
     };
 }
 

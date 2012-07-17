@@ -58,7 +58,7 @@ void Class::codegen_static_initializer(IR::Prog *irprog, Environment *env) {
 void Class::codegen_initializer(IR::Prog *irprog, Environment *env) {
     ClassInfo *csi = env->decl->get_class_info(this);
     IR::Block *b = new IR::Block(csi->initializer_label);
-    reg_count = 0;
+    reg_count = 1;
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
         FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
         if(f != NULL && f->expr != NULL && !f->is_static) {
@@ -78,18 +78,24 @@ void Class::codegen(IR::Prog *irprog, Environment *env) {
     codegen_static_initializer(irprog, env);
     codegen_initializer(irprog, env);
 
-    // methods
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++)
         (*it)->codegen(irprog, env);
 
     env->pop_class();
 }
 
-void FieldFeature::codegen(IR::Prog *ir, Environment *env) {
+void FieldFeature::codegen(IR::Prog *irprog, Environment *env) {
 }
 
-void MethodFeature::codegen(IR::Prog *ir, Environment *env) {
+void MethodFeature::codegen(IR::Prog *irprog, Environment *env) {
+    MethodInfo *mi = env->decl->get_method_info(this);
+    IR::Block *b = new IR::Block(mi->static_label);
+    reg_count = 1;
+    block->codegen(b, env);
+    b->add(IR::Build::retvoid());
+    irprog->add(b);
 }
+#include <typeinfo>
 
 void Block::codegen(IR::Block *b, Environment *env) {
     for(StatementIterator it = sl->begin(); it != sl->end(); it++)
@@ -105,8 +111,11 @@ IR::Type Expr::get_irtype() {
         return IR::TYPE_S1;
     else if(type == "ubyte")
         return IR::TYPE_U1;
+    else if(type == "void")
+        return IR::TYPE_VOID;
 
-    throw "INTERNAL ERROR";
+    cerr << "INTERNAL ERROR: " << type << endl;
+    exit(-2);
 }
 
 int Integer::codegen(IR::Block *b, Environment *env) {
@@ -156,18 +165,18 @@ int Object::codegen(IR::Block *b, Environment *env) {
 }
 
 int Assign::codegen(IR::Block *b, Environment *env) {
-    int rdst = reg_count++;
+    int rsrc = expr->codegen(b, env);
     // TODO
     string label("_molo_mogollon_");
-    b->add(IR::Build::load(get_irtype(), rdst, label));
-    return rdst;
+    b->add(IR::Build::store(get_irtype(), label, rsrc));
+    return 0;
 }
 
 int Decl::codegen(IR::Block *b, Environment *env) {
-    int rdst = reg_count++;
+    int rsrc = expr->codegen(b, env);
     // TODO
     string label("_molo_mogollon_");
-    b->add(IR::Build::load(get_irtype(), rdst, label));
-    return rdst;
+    b->add(IR::Build::store(get_irtype(), label, rsrc));
+    return 0;
 }
 

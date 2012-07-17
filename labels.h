@@ -10,5 +10,6 @@ class Labels {
         std::string static_class_initializer_label(std::string ns, AST::Class *c);
         std::string class_initializer_label(std::string ns, AST::Class *c);
         std::string static_field_label(std::string ns, AST::Class *c, AST::FieldFeature *f);
+        std::string static_method_label(std::string ns, AST::Class *c, AST::MethodFeature *m);
 };
 

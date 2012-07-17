@@ -1,6 +1,7 @@
 #include "ir.h"
 
 using namespace IR;
+using namespace std;
 
 Inst *Build::nop() {
     Inst *i = new Inst();
@@ -27,7 +28,7 @@ Inst *Build::loadimm(Type type, int rdst, int vsrc) {
     return i;
 }
 
-Inst *Build::load(Type type, int rdst, std::string &lsrc) {
+Inst *Build::load(Type type, int rdst, string lsrc) {
     Inst *i = new Inst();
     i->type = type;
     i->opcode = OP_LOAD;
@@ -36,7 +37,7 @@ Inst *Build::load(Type type, int rdst, std::string &lsrc) {
     return i;
 }
 
-Inst *Build::store(Type type, std::string &ldst, int rsrc) {
+Inst *Build::store(Type type, string ldst, int rsrc) {
     Inst *i = new Inst();
     i->type = type;
     i->opcode = OP_STORE;
@@ -92,12 +93,11 @@ Inst *Build::retvoid() {
     return i;
 }
 
-Inst *Build::callvoid(std::string &lsrc) {
+Inst *Build::callvoid(string lsrc) {
     Inst *i = new Inst();
     i->type = TYPE_VOID;
     i->opcode = OP_CALL;
     i->lsrc = lsrc;
     return i;
 }
-
 

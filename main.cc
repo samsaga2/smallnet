@@ -10,16 +10,9 @@
 
 using namespace std;
 
-int main(int argc, char **argv) {
-    if(argc == 1) {
-        cout << argv[0] << " file.sc" << endl;
-        return 0;
-    }
-
-    string filename(argv[1]);
-
+int compile(const char *filename) {
     // parse
-    AST::Program *astprog = parse(argv[1]);
+    AST::Program *astprog = parse(filename);
     if(astprog == NULL)
         return 1;
 
@@ -75,5 +68,14 @@ int main(int argc, char **argv) {
     fasm.close();
 
     return 0;
+}
+
+int main(int argc, char **argv) {
+    if(argc == 1) {
+        cout << argv[0] << " file.sc" << endl;
+        return 0;
+    }
+
+    return compile(argv[1]);
 }
 

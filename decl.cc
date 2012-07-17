@@ -4,6 +4,9 @@
 using namespace std;
 
 Declarations::~Declarations() {
+    for(std::map<AST::MethodFeature*, MethodInfo*>::iterator it = mf_info.begin(); it != mf_info.end(); it++)
+        delete it->second;
+
     for(std::map<AST::FieldFeature*, FieldInfo*>::iterator it = ff_info.begin(); it != ff_info.end(); it++)
         delete it->second;
 
@@ -55,6 +58,17 @@ void Declarations::add_field(AST::FieldFeature *f) {
 }
 
 void Declarations::add_method(AST::MethodFeature *m) {
-    // TODO
+    methods[get_current_ns()][get_current_cs()->id][m->id] = m;
+
+    // add method info
+    MethodInfo *mi = new MethodInfo();
+    if(m->is_static)
+        mi->static_label = labels.static_method_label(get_current_ns(), get_current_cs(), m);
+    mf_info[m] = mi;
+}
+
+bool Declarations::exists_feature(const std::string &id) {
+    ClassFieldDeclaration &fd = fields[get_current_ns()][get_current_cs()->id];
+    return fd.find(id) != fd.end();
 }
 

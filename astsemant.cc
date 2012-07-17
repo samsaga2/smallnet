@@ -44,8 +44,9 @@ void FieldFeature::semant(Environment *env) {
 
 void MethodFeature::semant(Environment *env) {
     // TODO forbidden dot on id
-    // TODO
+
     type = ret_type;
+    block->semant(env);
 }
 
 void Namespace::semant(Environment *env) {

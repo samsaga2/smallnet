@@ -24,3 +24,9 @@ string Labels::static_field_label(string ns, AST::Class *c, AST::FieldFeature *f
     return ss.str();
 }
 
+string Labels::static_method_label(string ns, AST::Class *c, AST::MethodFeature *m) {
+    stringstream ss;
+    ss << "_" << boost::replace_all_copy(ns, ".", "_") << "__" << c->id << "__" << m->id;
+    return ss.str();
+}
+
