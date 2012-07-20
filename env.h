@@ -11,9 +11,11 @@ class EnvironmentVar
     public:
         std::string id;
         std::string type;
+        FieldInfo *fi;
         EnvironmentVar() { }
-        EnvironmentVar(std::string id, std::string type) : id(id), type(type) { }
-        EnvironmentVar(const EnvironmentVar& v) : id(v.id), type(v.type) { }
+        EnvironmentVar(const EnvironmentVar& v) : id(v.id), type(v.type), fi(v.fi) { }
+        EnvironmentVar(std::string id, std::string type) : id(id), type(type), fi(NULL) { }
+        EnvironmentVar(std::string id, FieldInfo *fi) : id(id), fi(fi) { }
 };
 
 typedef std::list<std::map<std::string, EnvironmentVar> > EnvironmentVarStack;

@@ -78,8 +78,20 @@ void Class::codegen(IR::Prog *irprog, Environment *env) {
     codegen_static_initializer(irprog, env);
     codegen_initializer(irprog, env);
 
+    env->push_vars();
+
+    for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
+        AST::FieldFeature *ff = dynamic_cast<AST::FieldFeature*>(*it);
+        if(ff != NULL) {
+            FieldInfo *fi = env->decl->get_field_info(ff);
+            env->add_var(EnvironmentVar(ff->id, fi));
+        }
+    }
+
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++)
         (*it)->codegen(irprog, env);
+
+    env->pop_vars();
 
     env->pop_class();
 }
@@ -158,23 +170,38 @@ int Div::codegen(IR::Block *b, Environment *env) {
 
 int Object::codegen(IR::Block *b, Environment *env) {
     int rdst = reg_count++;
-    // TODO
-    string label("_molo_mogollon_");
-    b->add(IR::Build::load(get_irtype(), rdst, label));
+
+    EnvironmentVar *ev = env->find_var(id);
+    if(ev->fi != NULL && ev->fi->static_label != "")
+        b->add(IR::Build::load(get_irtype(), rdst, ev->fi->static_label));
+    else {
+        // TODO field index & temp regs
+        string label("_molo_mogollon_");
+        b->add(IR::Build::load(get_irtype(), rdst, label));
+    }
     return rdst;
 }
 
 int Assign::codegen(IR::Block *b, Environment *env) {
+    EnvironmentVar *ev = env->find_var(id);
+
     int rsrc = expr->codegen(b, env);
-    // TODO
-    string label("_molo_mogollon_");
-    b->add(IR::Build::store(get_irtype(), label, rsrc));
+    
+    if(ev->fi != NULL && ev->fi->static_label != "")
+        b->add(IR::Build::store(get_irtype(), ev->fi->static_label, rsrc));
+    else {
+        // TODO field index & temp regs
+        string label("_molo_mogollon_");
+        b->add(IR::Build::store(get_irtype(), label, rsrc));
+    }
     return 0;
 }
 
 int Decl::codegen(IR::Block *b, Environment *env) {
     int rsrc = expr->codegen(b, env);
-    // TODO
+
+    // TODO temp regs
+
     string label("_molo_mogollon_");
     b->add(IR::Build::store(get_irtype(), label, rsrc));
     return 0;
