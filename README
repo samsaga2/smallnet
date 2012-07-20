@@ -3,12 +3,12 @@ Differences with real c#:
 * vars has not defaults values (for optimization)
 * no exceptions (to avoid memory leaks because the lack of GC)
 * by default numbers (ex. 1234) are signed integers but you can change this:
-    123'int -> is a signed integer
-    123'uint -> is an unsigned integer
-    123'byte -> is a signed byte
-    123'ubyte -> is an unsigned byte
-  123+123 and 123'byte+123'byte and 123'ubyte+123'ubyte gives different results
-  123'int and 123'uint are basically the same except comparing numbers
+    123'i  -> is a signed integer
+    123'ui -> is an unsigned integer
+    123'b  -> is a signed byte
+    123'ub -> is an unsigned byte
+  123+123 and 123'b+123'b and 123'ub+123'ub gives different results
+  signed and unsigned are basically the same except for comparing numbers
 
 TODO:
 * type casting

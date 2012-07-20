@@ -85,7 +85,7 @@ void Assign::semant(Environment *env) {
         cerr << linenum << ": Non-matching types `" << ev->type << "' and `" << expr->type << "'" << endl;
     }
 
-    type = "void";
+    type = expr->type;
 }
 
 void Decl::semant(Environment *env) {
@@ -96,6 +96,6 @@ void Decl::semant(Environment *env) {
         cerr << linenum << ": Non-matching types `" << decl_type << "' and `" << expr->type << "'" << endl;
     }
 
-    type = "void";
+    type = expr->type;
 }
 

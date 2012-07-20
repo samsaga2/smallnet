@@ -1,3 +1,4 @@
+#include <cstdlib>
 #include <iostream>
 #include <getopt.h>
 #include <fstream>
@@ -10,7 +11,7 @@
 
 using namespace std;
 
-int compile(const char *filename) {
+int compile(const char *filename, bool optimize) {
     // parse
     AST::Program *astprog = parse(filename);
     if(astprog == NULL)
@@ -54,8 +55,10 @@ int compile(const char *filename) {
     fir.close();
 #endif
 
-    // optimizations
-    // TODO
+    if(optimize) {
+        // ir optimizations
+        // TODO
+    }
 
     // machine code
     string asm_filename(filename);
@@ -67,15 +70,38 @@ int compile(const char *filename) {
     m->codegen(irprog, fasm);
     fasm.close();
 
+    if(optimize) {
+        // asm optimization
+        // TODO
+    }
+
     return 0;
 }
 
 int main(int argc, char **argv) {
-    if(argc == 1) {
-        cout << argv[0] << " file.sc" << endl;
-        return 0;
+    int opt;
+    bool optimize = false;
+    std::string filename;
+
+    while((opt = getopt(argc, argv, "i:Oh")) != -1)
+        switch(opt) {
+            case 'O': optimize = true; break;
+            case 'i': filename = optarg; break;
+            case 'h':
+            default:
+                cout << "smallc -i file.sc [-O]" << endl
+                     << "  -i filename      file to compile" << endl
+                     << "  -O               enable optimization" << endl
+                     << endl;
+
+                return 1;
+        }
+
+    if(filename == "") {
+        cerr << "Missing input file" << endl;
+        return 1;
     }
 
-    return compile(argv[1]);
+    return compile(filename.c_str(), optimize);
 }
 

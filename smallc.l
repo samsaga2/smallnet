@@ -30,10 +30,10 @@ extern "C" int yylex();
 "-"                      return MINUS;
 "*"                      return MULT;
 "/"                      return DIV;
-"'int"                   return INTTYPE;
-"'uint"                  return UINTTYPE;
-"'byte"                  return BYTETYPE;
-"'ubyte"                 return UBYTETYPE;
+"'i"                     return INTTYPE;
+"'ui"                    return UINTTYPE;
+"'b"                     return BYTETYPE;
+"'ub"                    return UBYTETYPE;
 0b[0-1]+                 { yylval.i = (int)strtol(yytext + 2, NULL, 2); return INT; }
 0x[0-9a-fa-f]+           { yylval.i = (int)strtol(yytext + 2, NULL, 16); return INT; }
 [0-9]+                   { yylval.i = (int)strtol(yytext, NULL, 10); return INT; }

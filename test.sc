@@ -15,7 +15,7 @@ namespace Example.Tests
         static void main()
         {
             _j = 100+_u+_u;
-            _k = 12'byte;
+            _k = 12'b;
         }
     }
 }
