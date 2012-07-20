@@ -8,6 +8,7 @@
 #include "ir.h"
 #include "parse.h"
 #include "z80.h"
+#include "iropt.h"
 
 using namespace std;
 
@@ -44,6 +45,12 @@ int compile(const char *filename, bool optimize) {
     // code gen
     IR::Prog *irprog = astprog->codegen(env);
 
+    // ir optimizations
+    if(optimize) {
+        IR::Optimizator o;
+        o.optimize(irprog);
+    }
+
 #if DEBUG
     // debug
     string ir_filename(filename);
@@ -54,11 +61,6 @@ int compile(const char *filename, bool optimize) {
     irprog->dump(fir);
     fir.close();
 #endif
-
-    if(optimize) {
-        // ir optimizations
-        // TODO
-    }
 
     // machine code
     string asm_filename(filename);
