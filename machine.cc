@@ -30,9 +30,9 @@ set<RealReg> BaseMachine::get_regs_by_mask(RealReg reg_mask) {
 void BaseMachine::add_graph_nodes(RegGraph &g, Block *b) {
     for(InstList::iterator it = b->il.begin(); it != b->il.end(); it++) {
         Inst *inst = *it;
-        if(inst->rdst  != 0) g.add_vertex(inst->rdst );
-        if(inst->rsrc1 != 0) g.add_vertex(inst->rsrc1);
-        if(inst->rsrc2 != 0) g.add_vertex(inst->rsrc2);
+        if(inst->rdst  != 0) g.add_reg(inst->rdst );
+        if(inst->rsrc1 != 0) g.add_reg(inst->rsrc1);
+        if(inst->rsrc2 != 0) g.add_reg(inst->rsrc2);
     }
 }
 
@@ -154,18 +154,19 @@ void BaseMachine::add_graph_constraints(RegGraph &g, Block *b, BlockInfo &binfo)
 BaseMachine::RealRegMap BaseMachine::regallocator(Block *b) {
     BlockInfo binfo(b);
 
+    RegGraph::VertexFinal vertex_final;
     RegGraph graph(this);
     add_graph_nodes(graph, b);
     add_graph_edges(graph, b, binfo);
     add_graph_constraints(graph, b, binfo);
 
     // colorize graph
-    if(!graph.colorize()) {
+    if(!graph.colorize(vertex_final)) {
         // TODO spill
         cout << "*** SPILL NEEDED ***" << endl;
     }
 
-    return graph.vertex_final;
+    return vertex_final;
 }
 
 void BaseMachine::asmgen(RealRegMap &hardregs, IR::Block *b, ostream &o) {

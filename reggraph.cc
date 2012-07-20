@@ -6,57 +6,53 @@
 using namespace std;
 using namespace IR;
 
-void RegGraph::clear() {
-    edges.clear();
-    vertex_colors.clear();
-}
+void RegGraph::add_reg(VirtualReg irreg) {
+    if(reg2node[irreg] != 0)
+        return;
 
-void RegGraph::add_vertex(VirtualReg irreg) {
-    vertices.insert(irreg);
+    int node = node_count++;
+    reg2node[irreg] = node;
+    node2reg[node] = irreg;
+
+    nodes.insert(reg2node[irreg]);
 }
 
 void RegGraph::add_edge(VirtualReg irreg1, VirtualReg irreg2) {
-    edges[irreg1].insert(irreg2);
-    edges[irreg2].insert(irreg1);
+    edges[reg2node[irreg1]].insert(reg2node[irreg2]);
+    edges[reg2node[irreg2]].insert(reg2node[irreg1]);
 }
 
 void RegGraph::add_reg_candidate(VirtualReg irreg, RealReg mreg) {
-    vertex_colors[irreg].insert(mreg);
+    node_colors[reg2node[irreg]].insert(mreg);
 }
 
-void RegGraph::dump(ostream &o) {
-    // edges
-    // TODO iterar por .vertices no por edges asi se muestran los vertices sin edges
-    for(Vertices::iterator it = vertices.begin(); it != vertices.end(); it++) {
-        o << "edges for #" << *it << " ->";
-        Vertices &v = edges[*it];
-        for(Vertices::iterator it2 = v.begin(); it2 != v.end(); it2++)
-            o << " #" << *it2;
-        o << endl;
-    }
+void RegGraph::build_final(NodeFinal &node_final, VertexFinal &vertex_final) {
+    for(NodeFinal::iterator it = node_final.begin(); it != node_final.end(); it++)
+        vertex_final[node2reg[it->first]] = it->second;
 }
 
-bool RegGraph::colorize() {
+bool RegGraph::colorize(VertexFinal &vertex_final) {
     vertex_final.clear();
 
     // sort vertices by edges count
-    typedef list<pair<size_t, IR::VirtualReg> > PairedVerts;
-    PairedVerts v;
-    for(Vertices::iterator it = vertices.begin(); it != vertices.end(); it++)
-        v.push_back(make_pair(edges[*it].size(), *it));
-    v.sort();
+    typedef list<pair<size_t, Node> > PairedNodes;
+    PairedNodes pn;
+    for(Nodes::iterator it = nodes.begin(); it != nodes.end(); it++)
+        pn.push_back(make_pair(edges[*it].size(), *it));
+    pn.sort();
 
     // colorize
+    NodeFinal node_final;
     EdgeMap e = edges;
-    for(PairedVerts::iterator it = v.begin(); it != v.end(); it++) {
-        VirtualReg irreg = it->second;
-        set<RealReg> candidates = vertex_colors[irreg];
-        Vertices &ve = e[irreg];
-        for(Vertices::iterator it2 = ve.begin(); it2 != ve.end(); it2++) {
-            VirtualReg irreg_edge = *it2;
-            RealReg irreg_final = vertex_final[irreg_edge];
-            if(irreg_final != 0) {
-                set<RealReg> irreg_regs = machine->get_regs_by_mask(irreg_final);
+    for(PairedNodes::iterator it = pn.begin(); it != pn.end(); it++) {
+        Node node = it->second;
+        set<RealReg> candidates = node_colors[node];
+        Nodes &ne = e[node];
+        for(Nodes::iterator it2 = ne.begin(); it2 != ne.end(); it2++) {
+            Node node_edge = *it2;
+            RealReg reg_final = node_final[node_edge];
+            if(reg_final != 0) {
+                set<RealReg> irreg_regs = machine->get_regs_by_mask(reg_final);
                 set<RealReg> result;
                 set_difference(
                     candidates.begin(), candidates.end(),
@@ -67,13 +63,15 @@ bool RegGraph::colorize() {
 
             if(candidates.size() == 0) {
                 // TODO spill
+                build_final(node_final, vertex_final); // TODO delete this line when spill is done
                 return false;
             }
         }
 
-        vertex_final[irreg] = *candidates.begin();
+        node_final[node] = *candidates.begin();
     }
     
+    build_final(node_final, vertex_final);
     return true;
 }
 
