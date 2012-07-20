@@ -105,17 +105,49 @@ void Machine::dump_reg(RealReg reg, std::ostream &o) {
     }
 }
 
+int low_reg(int reg) {
+    switch(reg) {
+        case R_BC: return R_C;
+        case R_DE: return R_E;
+        case R_HL: return R_L;
+        case R_IX: return R_IXL;
+        case R_IY: return R_IYL;
+    }
+    return 0;
+}
+
+int high_reg(int reg) {
+    switch(reg) {
+        case R_BC: return R_B;
+        case R_DE: return R_D;
+        case R_HL: return R_H;
+        case R_IX: return R_IXH;
+        case R_IY: return R_IYH;
+    }
+    return 0;
+}
+
+
 void Machine::asmgen(RealRegMap &hardregs, Inst *inst, ostream &o) {
     switch(inst->opcode) {
         case OP_NOP:
             //o << "\tnop" << endl;
             break;
         case OP_MOVE:
-            o << "\tld ";
-            dump_reg(hardregs[inst->rdst], o);
-            o << ",";
-            dump_reg(hardregs[inst->rsrc1], o);
-            o << endl;
+            if(inst->type == TYPE_U2 || inst->type == TYPE_S2) {
+                int lowdst = low_reg(hardregs[inst->rdst]);
+                int highdst = high_reg(hardregs[inst->rdst]);
+                int lowsrc = low_reg(hardregs[inst->rsrc1]);
+                int highsrc = high_reg(hardregs[inst->rsrc1]);
+                o << "\tld "; dump_reg(lowdst, o); o << ","; dump_reg(lowsrc, o); o << endl;
+                o << "\tld "; dump_reg(highdst, o); o << ","; dump_reg(highsrc, o); o << endl;
+            } else {
+                o << "\tld ";
+                dump_reg(hardregs[inst->rdst], o);
+                o << ",";
+                dump_reg(hardregs[inst->rsrc1], o);
+                o << endl;
+            }
             break;
         case OP_LOADIMM:
             o << "\tld ";
@@ -125,25 +157,32 @@ void Machine::asmgen(RealRegMap &hardregs, Inst *inst, ostream &o) {
             break;
         case OP_LOAD:
             if(hardregs[inst->rdst] == R_IX) {
-                o << "\tld ixl,(" << inst->lsrc << ")" << endl;
-                o << "\tld ixh,(" << inst->lsrc << "+1)" << endl;
+                o << "\tld a,(" << inst->lsrc << ")" << endl
+                  << "\tld ixl,a" << endl
+                  << "\tld a,(" << inst->lsrc << "+1)" << endl
+                  << "\tld ixh,a" << endl;
             } else if(hardregs[inst->rdst] == R_IY) {
-                o << "\tld iyl,(" << inst->lsrc << ")" << endl;
-                o << "\tld iyh,(" << inst->lsrc << "+1)" << endl;
+                o << "\tld a,(" << inst->lsrc << ")" << endl
+                  << "\tld iyl,a" << endl
+                  << "\tld a,(" << inst->lsrc << "+1)" << endl
+                  << "\tld iyh,a" << endl;
             } else {
                 o << "\tld ";
                 dump_reg(hardregs[inst->rdst], o);
-                o << ",(" << inst->lsrc << ")";
-                o << endl;
+                o << ",(" << inst->lsrc << ")" << endl;
             }
             break;
         case OP_STORE:
             if(hardregs[inst->rsrc1] == R_IX) {
-                o << "\tld (" << inst->ldst << "),ixl" << endl;
-                o << "\tld (" << inst->ldst << "+1),ixh" << endl;
+                o << "\tld a,ixl" << endl
+                  << "\tld (" << inst->ldst << "),a" << endl
+                  << "\tld a,ixh" << endl
+                  << "\tld (" << inst->ldst << "+1),a" << endl;
             } else if(hardregs[inst->rsrc1] == R_IY) {
-                o << "\tld (" << inst->ldst << "),iyl" << endl;
-                o << "\tld (" << inst->ldst << "+1),iyh" << endl;
+                o << "\tld a,iyl" << endl
+                  << "\tld (" << inst->ldst << "),a" << endl
+                  << "\tld a,iyh" << endl
+                  << "\tld (" << inst->ldst << "+1),a" << endl;
             } else {
                 o << "\tld (" << inst->ldst << "),";
                 dump_reg(hardregs[inst->rsrc1], o);
