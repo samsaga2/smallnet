@@ -1,7 +1,14 @@
 Differences with real c#:
 * no garbage collector (you must use dispose method)
 * vars has not defaults values (for optimization)
-* no exceptions
+* no exceptions (to avoid memory leaks because the lack of GC)
+* by default numbers (ex. 1234) are signed integers but you can change this:
+    123'int -> is a signed integer
+    123'uint -> is an unsigned integer
+    123'byte -> is a signed byte
+    123'ubyte -> is an unsigned byte
+  123+123 and 123'byte+123'byte and 123'ubyte+123'ubyte gives different results
+  123'int and 123'uint are basically the same except comparing numbers
 
 TODO:
 * type casting

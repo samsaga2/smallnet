@@ -64,10 +64,11 @@ namespace AST {
     class Integer : public Expr {
         public:
             int value;
+            std::string decl_type;
 
-            Integer(int linenum, int value) : Expr(linenum), value(value) { }
+            Integer(int linenum, int value, std::string type) : Expr(linenum), value(value), decl_type(type) { }
             void dump(std::ostream &o) { o << value; }
-            void semant(Environment *e);
+            void semant(Environment *e) { type = decl_type; }
             int codegen(IR::Block *b, Environment *env);
     };
 

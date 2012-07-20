@@ -4,10 +4,6 @@
 using namespace AST;
 using namespace std;
 
-void Integer::semant(Environment *env) {
-    type = "int";
-}
-
 void Program::semant(Environment *env) {
     for(NamespaceIterator it = nsl->begin(); it != nsl->end(); it++)
         (*it)->semant(env);

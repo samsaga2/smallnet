@@ -34,6 +34,7 @@ using namespace std;
 }
 
 %token ERROR NS CLASS PUBLIC PRIVATE PROTECTED STATIC PLUS MINUS SUB DIV
+%token INTTYPE UINTTYPE BYTETYPE UBYTETYPE
 %token <i> INT
 %token <s> ID
 
@@ -133,7 +134,11 @@ expr: binop
     | term
     ;
 
-int: INT { $$ = new AST::Integer(linenum, $1); }
+int: INT INTTYPE   { $$ = new AST::Integer(linenum, $1, "int"); }
+   | INT UINTTYPE  { $$ = new AST::Integer(linenum, $1, "uint"); }
+   | INT BYTETYPE  { $$ = new AST::Integer(linenum, $1, "byte"); }
+   | INT UBYTETYPE { $$ = new AST::Integer(linenum, $1, "ubyte"); }
+   | INT           { $$ = new AST::Integer(linenum, $1, "int"); }
    ;
 
 %%
