@@ -12,10 +12,12 @@ class EnvironmentVar
         std::string id;
         std::string type;
         FieldInfo *fi;
+        int temp_reg;
         EnvironmentVar() { }
-        EnvironmentVar(const EnvironmentVar& v) : id(v.id), type(v.type), fi(v.fi) { }
-        EnvironmentVar(std::string id, std::string type) : id(id), type(type), fi(NULL) { }
-        EnvironmentVar(std::string id, FieldInfo *fi) : id(id), fi(fi) { }
+        EnvironmentVar(const EnvironmentVar& v) : id(v.id), type(v.type), fi(v.fi), temp_reg(v.temp_reg) { }
+        EnvironmentVar(std::string id, std::string type) : id(id), type(type), fi(NULL), temp_reg(0) { }
+        EnvironmentVar(std::string id, FieldInfo *fi) : id(id), fi(fi), temp_reg(0) { }
+        EnvironmentVar(std::string id, int temp_reg) : id(id), fi(NULL), temp_reg(temp_reg) { }
 };
 
 typedef std::list<std::map<std::string, EnvironmentVar> > EnvironmentVarStack;

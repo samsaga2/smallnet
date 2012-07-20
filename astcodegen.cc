@@ -174,8 +174,10 @@ int Object::codegen(IR::Block *b, Environment *env) {
     EnvironmentVar *ev = env->find_var(id);
     if(ev->fi != NULL && ev->fi->static_label != "")
         b->add(IR::Build::load(get_irtype(), rdst, ev->fi->static_label));
+    else if(ev->temp_reg != 0)
+        b->add(IR::Build::move(get_irtype(), rdst, ev->temp_reg));
     else {
-        // TODO field index & temp regs
+        // TODO field index
         string label("_molo_mogollon_");
         b->add(IR::Build::load(get_irtype(), rdst, label));
     }
@@ -189,8 +191,10 @@ int Assign::codegen(IR::Block *b, Environment *env) {
     
     if(ev->fi != NULL && ev->fi->static_label != "")
         b->add(IR::Build::store(get_irtype(), ev->fi->static_label, rsrc));
+    else if(ev->temp_reg != 0)
+        b->add(IR::Build::move(get_irtype(), ev->temp_reg, rsrc));
     else {
-        // TODO field index & temp regs
+        // TODO field index
         string label("_molo_mogollon_");
         b->add(IR::Build::store(get_irtype(), label, rsrc));
     }
@@ -198,12 +202,8 @@ int Assign::codegen(IR::Block *b, Environment *env) {
 }
 
 int Decl::codegen(IR::Block *b, Environment *env) {
-    int rsrc = expr->codegen(b, env);
-
-    // TODO temp regs
-
-    string label("_molo_mogollon_");
-    b->add(IR::Build::store(get_irtype(), label, rsrc));
+    int rdst = expr->codegen(b, env);
+    env->add_var(EnvironmentVar(id, rdst));
     return 0;
 }
 
