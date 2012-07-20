@@ -58,7 +58,7 @@ namespace AST {
 
             Expr(int linenum) : Node(linenum) { }
             IR::Type get_irtype();
-            virtual int codegen(IR::Block *b, Environment *env) = 0;
+            virtual IR::VirtualReg codegen(IR::Block *b, Environment *env) = 0;
     };
 
     class Integer : public Expr {
@@ -69,7 +69,7 @@ namespace AST {
             Integer(int linenum, int value, std::string type) : Expr(linenum), value(value), decl_type(type) { }
             void dump(std::ostream &o) { o << value; }
             void semant(Environment *e) { type = decl_type; }
-            int codegen(IR::Block *b, Environment *env);
+            IR::VirtualReg codegen(IR::Block *b, Environment *env);
     };
 
     class Object : public Expr {
@@ -79,7 +79,7 @@ namespace AST {
             Object(int linenum, std::string id) : Expr(linenum), id(id) { }
             void dump(std::ostream &o) { o << id; }
             void semant(Environment *e);
-            int codegen(IR::Block *b, Environment *env);
+            IR::VirtualReg codegen(IR::Block *b, Environment *env);
     };
 
     class Block : public Node {
@@ -233,6 +233,27 @@ namespace AST {
                 : Expr(linenum), id(id), decl_type(decl_type), expr(expr) { }
             ~Decl() { delete expr; }
             void dump(std::ostream &o) { o << decl_type << " " << id << " = ("; expr->dump(o); o << ")"; }
+            void semant(Environment *e);
+            int codegen(IR::Block *b, Environment *env);
+    };
+
+    class Call : public Expr {
+        public:
+            std::string id;
+
+            Call(int linenum, std::string id) : Expr(linenum), id(id) { }
+            void dump(std::ostream &o);
+            void semant(Environment *e);
+            int codegen(IR::Block *b, Environment *env);
+    };
+
+    class Return : public Expr {
+        public:
+            Expr *expr;
+            Return(int linenum) : Expr(linenum), expr(NULL) { }
+            Return(int linenum, Expr *expr) : Expr(linenum), expr(expr) { }
+            ~Return() { if(expr != NULL) delete expr; }
+            void dump(std::ostream &o);
             void semant(Environment *e);
             int codegen(IR::Block *b, Environment *env);
     };

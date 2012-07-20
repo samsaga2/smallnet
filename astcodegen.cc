@@ -13,9 +13,9 @@ void Program::codegen_start(IR::Prog *irprog, Environment *env) {
     IR::Block *b = new IR::Block(Labels::global_start);
     for(ClassInfoMap::iterator it = env->decl->begin_classes(); it != env->decl->end_classes(); it++) {
         ClassInfo *csi = it->second;
-        b->add(IR::Build::callvoid(csi->static_initializer_label));
+        b->add(IR::Build::call(csi->static_initializer_label));
     }
-    b->add(IR::Build::retvoid());
+    b->add(IR::Build::ret());
     irprog->add(b);
 }
 
@@ -47,11 +47,11 @@ void Class::codegen_static_initializer(IR::Prog *irprog, Environment *env) {
         FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
         if(f != NULL && f->expr != NULL && f->is_static) {
             FieldInfo *fi = env->decl->get_field_info(f);
-            int rsrc = f->expr->codegen(b, env);
+            IR::VirtualReg rsrc = f->expr->codegen(b, env);
             b->add(IR::Build::store(f->expr->get_irtype(), fi->static_label, rsrc));
         }
     }
-    b->add(IR::Build::retvoid());
+    b->add(IR::Build::ret());
     irprog->add(b);
 }
 
@@ -62,13 +62,13 @@ void Class::codegen_initializer(IR::Prog *irprog, Environment *env) {
     for(FeatureList::iterator it = fl->begin(); it != fl->end(); it++) {
         FieldFeature *f = dynamic_cast<FieldFeature*>(*it);
         if(f != NULL && f->expr != NULL && !f->is_static) {
-            int rsrc = f->expr->codegen(b, env);
+            IR::VirtualReg rsrc = f->expr->codegen(b, env);
             // TODO field index
             string label("_chachi_");
             b->add(IR::Build::store(f->expr->get_irtype(), label, rsrc));
         }
     }
-    b->add(IR::Build::retvoid());
+    b->add(IR::Build::ret());
     irprog->add(b);
 }
 
@@ -100,14 +100,17 @@ void FieldFeature::codegen(IR::Prog *irprog, Environment *env) {
 }
 
 void MethodFeature::codegen(IR::Prog *irprog, Environment *env) {
+    env->push_method(this);
+
     MethodInfo *mi = env->decl->get_method_info(this);
     IR::Block *b = new IR::Block(mi->static_label);
     reg_count = 1;
     block->codegen(b, env);
-    b->add(IR::Build::retvoid());
+    b->add(IR::Build::ret());
     irprog->add(b);
+
+    env->pop_method();
 }
-#include <typeinfo>
 
 void Block::codegen(IR::Block *b, Environment *env) {
     for(StatementIterator it = sl->begin(); it != sl->end(); it++)
@@ -130,46 +133,46 @@ IR::Type Expr::get_irtype() {
     exit(-2);
 }
 
-int Integer::codegen(IR::Block *b, Environment *env) {
-    int rdst = reg_count++;
+IR::VirtualReg Integer::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rdst = reg_count++;
     b->add(IR::Build::loadimm(get_irtype(), rdst, value));
     return rdst;
 }
 
-int Plus::codegen(IR::Block *b, Environment *env) {
-    int rsrc1 = e1->codegen(b, env);
-    int rsrc2 = e2->codegen(b, env);
-    int rdst = reg_count++;
+IR::VirtualReg Plus::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rsrc1 = e1->codegen(b, env);
+    IR::VirtualReg rsrc2 = e2->codegen(b, env);
+    IR::VirtualReg rdst = reg_count++;
     b->add(IR::Build::add(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
-int Sub::codegen(IR::Block *b, Environment *env) {
-    int rsrc1 = e1->codegen(b, env);
-    int rsrc2 = e2->codegen(b, env);
-    int rdst = reg_count++;
+IR::VirtualReg Sub::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rsrc1 = e1->codegen(b, env);
+    IR::VirtualReg rsrc2 = e2->codegen(b, env);
+    IR::VirtualReg rdst = reg_count++;
     b->add(IR::Build::sub(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
-int Mult::codegen(IR::Block *b, Environment *env) {
-    int rsrc1 = e1->codegen(b, env);
-    int rsrc2 = e2->codegen(b, env);
-    int rdst = reg_count++;
+IR::VirtualReg Mult::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rsrc1 = e1->codegen(b, env);
+    IR::VirtualReg rsrc2 = e2->codegen(b, env);
+    IR::VirtualReg rdst = reg_count++;
     b->add(IR::Build::mult(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
-int Div::codegen(IR::Block *b, Environment *env) {
-    int rsrc1 = e1->codegen(b, env);
-    int rsrc2 = e2->codegen(b, env);
-    int rdst = reg_count++;
+IR::VirtualReg Div::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rsrc1 = e1->codegen(b, env);
+    IR::VirtualReg rsrc2 = e2->codegen(b, env);
+    IR::VirtualReg rdst = reg_count++;
     b->add(IR::Build::div(get_irtype(), rdst, rsrc1, rsrc2));
     return rdst;
 }
 
-int Object::codegen(IR::Block *b, Environment *env) {
-    int rdst = reg_count++;
+IR::VirtualReg Object::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rdst = reg_count++;
 
     EnvironmentVar *ev = env->find_var(id);
     if(ev->fi != NULL && ev->fi->static_label != "")
@@ -184,10 +187,10 @@ int Object::codegen(IR::Block *b, Environment *env) {
     return rdst;
 }
 
-int Assign::codegen(IR::Block *b, Environment *env) {
+IR::VirtualReg Assign::codegen(IR::Block *b, Environment *env) {
     EnvironmentVar *ev = env->find_var(id);
 
-    int rsrc = expr->codegen(b, env);
+    IR::VirtualReg rsrc = expr->codegen(b, env);
     
     if(ev->fi != NULL && ev->fi->static_label != "")
         b->add(IR::Build::store(get_irtype(), ev->fi->static_label, rsrc));
@@ -195,15 +198,42 @@ int Assign::codegen(IR::Block *b, Environment *env) {
         b->add(IR::Build::move(get_irtype(), ev->temp_reg, rsrc));
     else {
         // TODO field index
-        string label("_molo_mogollon_");
+        string label("_braguitasdecolores_");
         b->add(IR::Build::store(get_irtype(), label, rsrc));
     }
     return 0;
 }
 
-int Decl::codegen(IR::Block *b, Environment *env) {
-    int rdst = expr->codegen(b, env);
+IR::VirtualReg Decl::codegen(IR::Block *b, Environment *env) {
+    IR::VirtualReg rdst = expr->codegen(b, env);
     env->add_var(EnvironmentVar(id, rdst));
+    return 0;
+}
+
+IR::VirtualReg Call::codegen(IR::Block *b, Environment *env) {
+    MethodFeature *mf = env->find_method(id);
+    MethodInfo *mi = env->decl->get_method_info(mf);
+    
+    // TODO args
+    IR::Type rettype = get_irtype();
+    IR::VirtualReg rdst = rettype == IR::TYPE_VOID ? 0 : reg_count++;
+
+    if(mi->static_label != "")
+        b->add(IR::Build::call(rettype, rdst, mi->static_label));
+    else
+        // TODO non-static methods
+        b->add(IR::Build::call(rettype, rdst, "_lovendobaratooiga_"));
+
+    return rdst;
+}
+
+IR::VirtualReg Return::codegen(IR::Block *b, Environment *env) {
+    if(expr != NULL) {
+        IR::VirtualReg rsrc = expr->codegen(b, env);
+        b->add(IR::Build::ret(get_irtype(), rsrc));
+    } else
+        b->add(IR::Build::ret());
+
     return 0;
 }
 

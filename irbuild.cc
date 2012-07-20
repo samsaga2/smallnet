@@ -86,17 +86,35 @@ Inst *Build::div(Type type, int rdst, int rsrc1, int rsrc2) {
     return i;
 }
 
-Inst *Build::retvoid() {
+Inst *Build::ret() {
     Inst *i = new Inst();
     i->type = TYPE_VOID;
     i->opcode = OP_RET;
     return i;
 }
 
-Inst *Build::callvoid(string lsrc) {
+Inst *Build::ret(Type type, int rsrc1) {
     Inst *i = new Inst();
-    i->type = TYPE_VOID;
+    i->type = type;
+    i->opcode = OP_RET;
+    i->rsrc1 = rsrc1;
+    return i;
+}
+
+Inst *Build::call(string lsrc) {
+    Inst *i = new Inst();
+    i->type = TYPE_VOID; 
     i->opcode = OP_CALL;
+    i->lsrc = lsrc;
+    return i;
+}
+
+
+Inst *Build::call(Type type, VirtualReg rdst, string lsrc) {
+    Inst *i = new Inst();
+    i->type = type; 
+    i->opcode = OP_CALL;
+    i->rdst = rdst;
     i->lsrc = lsrc;
     return i;
 }

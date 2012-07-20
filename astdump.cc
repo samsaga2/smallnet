@@ -46,3 +46,15 @@ void MethodFeature::dump(std::ostream &o) {
     o << "}" << std::endl;
 }
 
+void Call::dump(std::ostream &o) {
+    // TODO args
+    o << id << "()";
+}
+
+void Return::dump(std::ostream &o) {
+    if(expr != NULL) {
+        o << "return ("; expr->dump(o); o << ")";
+    } else
+        o << "return";
+}
+

@@ -20,6 +20,7 @@ extern "C" int yylex();
 "private"                return PRIVATE;
 "static"                 return STATIC;
 "class"                  return CLASS;
+"return"                 return RETURN;
 "{"                      return '{';
 "}"                      return '}';
 "("                      return '(';

@@ -89,8 +89,10 @@ namespace IR {
             static Inst *sub(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *mult(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
             static Inst *div(Type type, VirtualReg rdst, VirtualReg rsrc1, VirtualReg rsrc2);
-            static Inst *retvoid();
-            static Inst *callvoid(std::string lsrc);
+            static Inst *ret();
+            static Inst *ret(Type type, VirtualReg rsrc1);
+            static Inst *call(std::string lsrc);
+            static Inst *call(Type type, VirtualReg rdst, std::string lsrc);
     };
 }
 

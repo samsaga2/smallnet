@@ -34,7 +34,7 @@ using namespace std;
 }
 
 %token ERROR NS CLASS PUBLIC PRIVATE PROTECTED STATIC PLUS MINUS SUB DIV
-%token INTTYPE UINTTYPE BYTETYPE UBYTETYPE
+%token INTTYPE UINTTYPE BYTETYPE UBYTETYPE RETURN
 %token <i> INT
 %token <s> ID
 
@@ -45,7 +45,7 @@ using namespace std;
 %type <cs> cs
 %type <fe> field feature method
 %type <fl> features
-%type <expr> expr binop term stmt
+%type <expr> expr binop term stmt call
 %type <inte> int
 %type <block> block stmts
 %type <arg> arg
@@ -117,6 +117,9 @@ stmts: stmt       { $$ = new AST::Block(linenum); $$->sl->push_back($1); }
 
 stmt: ID '=' expr ';'    { $$ = new AST::Assign(linenum, *$1, $3); delete $1; }
     | ID ID '=' expr ';' { $$ = new AST::Decl(linenum, *$2, *$1, $4); delete $2; delete $1; }
+    | call ';'           { $$ = $1; }
+    | RETURN ';'         { $$ = new AST::Return(linenum); }
+    | RETURN expr ';'    { $$ = new AST::Return(linenum, $2); }
     ;
 
 binop: expr PLUS expr  { $$ = new AST::Plus(linenum, $1, $3); }
@@ -132,6 +135,10 @@ term: int          { $$ = $1; }
 
 expr: binop
     | term
+    | call
+    ;
+
+call: ID '(' ')' { $$ = new AST::Call(linenum, *$1); delete $1; }
     ;
 
 int: INT INTTYPE   { $$ = new AST::Integer(linenum, $1, "int"); }

@@ -62,6 +62,10 @@ Machine::Machine() {
     constraints[OP_ADD].push_back(InstRegConstraints(R_IY, R_IY, R_DE));
 
     constraints[OP_SUB] = constraints[OP_ADD];
+
+    constraints[OP_CALL].push_back(InstRegConstraints(R_HL, 0, 0));
+
+    constraints[OP_RET].push_back(InstRegConstraints(0, R_HL, 0));
 }
 
 void Machine::dump_reg(RealReg reg, std::ostream &o) {

@@ -30,6 +30,14 @@ void Environment::pop_class() {
     cs_stack.pop_back();
 }
 
+void Environment::push_method(AST::MethodFeature *mf) {
+    mf_stack.push_back(mf);
+}
+
+void Environment::pop_method() {
+    mf_stack.pop_back();
+}
+
 string Environment::get_current_ns() {
     return boost::algorithm::join(ns_stack, ".");
 }
@@ -52,6 +60,21 @@ EnvironmentVar *Environment::find_var(string id) {
         if(it2 != it->end())
             return &it2->second;
     }
+
+    return NULL;
+}
+
+AST::MethodFeature *Environment::find_method(std::string id) {
+    for(list<AST::Class*>::iterator csit = cs_stack.begin(); csit != cs_stack.end(); csit++)  {
+        AST::Class *cs = *csit;
+        for(AST::FeatureList::iterator fit = cs->fl->begin(); fit != cs->fl->end(); fit++) {
+            AST::MethodFeature *mf = dynamic_cast<AST::MethodFeature*>(*fit);
+            if(mf != NULL && mf->id == id)
+                return mf;
+        }
+    }
+
+    // TODO maybe id is full name static-method (TestNamespace.TestClass.testMethod)
 
     return NULL;
 }

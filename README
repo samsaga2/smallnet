@@ -11,6 +11,7 @@ Differences with real c#:
   signed and unsigned are basically the same except for comparing numbers
 
 TODO:
+* add uses directives
 * type casting
 * static methods
 * register spilling
@@ -22,7 +23,7 @@ TODO:
 * strings
 * conditionals and loops
 * memory manager
-* use pragmas for create roms
+* tool for roms (using pragmas maybe?)
 * declare same method with different args
 * box/unbox basic types
 

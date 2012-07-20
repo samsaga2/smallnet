@@ -12,11 +12,15 @@ namespace Example.Tests
         static byte _k;
         static int _u = 1000;
 
+        static int testCall()
+        {
+            return _u+_u;
+        }
+
         static void main()
         {
-            int tt = 100;
-            _k = 12'b;
-            _j = tt+_u+_u;
+            int tt = testCall();
+            _j = 10 + tt;
         }
     }
 }

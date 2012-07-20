@@ -40,9 +40,11 @@ void FieldFeature::semant(Environment *env) {
 
 void MethodFeature::semant(Environment *env) {
     // TODO forbidden dot on id
-
+    
+    env->push_method(this);
     type = ret_type;
     block->semant(env);
+    env->pop_method();
 }
 
 void Namespace::semant(Environment *env) {
@@ -97,5 +99,29 @@ void Decl::semant(Environment *env) {
     }
 
     type = expr->type;
+
+    env->add_var(EnvironmentVar(id, type));
+}
+
+void Call::semant(Environment *env) {
+    MethodFeature *mf = env->find_method(id);
+
+    // TODO method args
+
+    type = mf->ret_type;
+}
+
+void Return::semant(Environment *env) {
+    if(expr != NULL) {
+        expr->semant(env);
+        type = expr->type;
+    } else
+        type = "void";
+
+    AST::MethodFeature *mf = env->get_current_mf();
+    if(mf->ret_type != type) {
+        env->errors++;
+        cerr << linenum << ": Non-matching types `" << type << "' and `" << mf->ret_type << "'" << endl;
+    }
 }
 

@@ -22,11 +22,11 @@ class EnvironmentVar
 
 typedef std::list<std::map<std::string, EnvironmentVar> > EnvironmentVarStack;
 
-class Environment
-{
+class Environment {
     private:
         std::list<std::string> ns_stack;
         std::list<AST::Class*> cs_stack;
+        std::list<AST::MethodFeature*> mf_stack;
         EnvironmentVarStack vars_stack;
 
     public:
@@ -41,13 +41,19 @@ class Environment
         void push_class(AST::Class *cs);
         void pop_class();
 
+        void push_method(AST::MethodFeature *mf);
+        void pop_method();
+
         std::string get_current_ns();
         AST::Class *get_current_cs() { return cs_stack.back(); }
+        AST::MethodFeature *get_current_mf() { return mf_stack.back(); }
 
         void push_vars();
         void pop_vars();
 
         void add_var(const EnvironmentVar &v);
+
         EnvironmentVar *find_var(std::string id);
+        AST::MethodFeature *find_method(std::string id);
 };
 
