@@ -6,14 +6,22 @@
 using namespace std;
 using namespace IR;
 
+void RegGraph::collapse_regs(IR::VirtualReg irreg1, IR::VirtualReg irreg2) {
+    int new_node = reg2node[irreg1];
+    int node_to_delete = reg2node[irreg2];
+
+    for(Reg2Node::iterator it = reg2node.begin(); it != reg2node.end(); it++)
+        if(it->second == node_to_delete)
+            reg2node[it->first] = new_node;
+
+    nodes.erase(node_to_delete);
+}
+
 void RegGraph::add_reg(VirtualReg irreg) {
     if(reg2node[irreg] != 0)
         return;
 
-    int node = node_count++;
-    reg2node[irreg] = node;
-    node2reg[node] = irreg;
-
+    reg2node[irreg] = node_count++;
     nodes.insert(reg2node[irreg]);
 }
 
@@ -27,8 +35,8 @@ void RegGraph::add_reg_candidate(VirtualReg irreg, RealReg mreg) {
 }
 
 void RegGraph::build_final(NodeFinal &node_final, VertexFinal &vertex_final) {
-    for(NodeFinal::iterator it = node_final.begin(); it != node_final.end(); it++)
-        vertex_final[node2reg[it->first]] = it->second;
+    for(Reg2Node::iterator it = reg2node.begin(); it != reg2node.end(); it++)
+        vertex_final[it->first] = node_final[it->second];
 }
 
 bool RegGraph::colorize(VertexFinal &vertex_final) {

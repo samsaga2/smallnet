@@ -30,42 +30,57 @@ Machine::Machine() {
     default_regs[TYPE_U2].insert(word_regs.begin(), word_regs.end());
     default_regs[TYPE_S2].insert(word_regs.begin(), word_regs.end());
 
-    constraints[OP_LOAD].push_back(InstRegConstraints(R_A , 0, 0));
-    constraints[OP_LOAD].push_back(InstRegConstraints(R_BC, 0, 0));
-    constraints[OP_LOAD].push_back(InstRegConstraints(R_DE, 0, 0));
-    constraints[OP_LOAD].push_back(InstRegConstraints(R_HL, 0, 0));
-    constraints[OP_LOAD].push_back(InstRegConstraints(R_IX, 0, 0));
-    constraints[OP_LOAD].push_back(InstRegConstraints(R_IY, 0, 0));
+    constraints[OP_LOAD].rdsts.insert(R_A);
+    constraints[OP_LOAD].rdsts.insert(R_BC);
+    constraints[OP_LOAD].rdsts.insert(R_DE);
+    constraints[OP_LOAD].rdsts.insert(R_HL);
+    constraints[OP_LOAD].rdsts.insert(R_IX);
+    constraints[OP_LOAD].rdsts.insert(R_IY);
 
-    constraints[OP_STORE].push_back(InstRegConstraints(0, R_A , 0));
-    constraints[OP_STORE].push_back(InstRegConstraints(0, R_BC, 0));
-    constraints[OP_STORE].push_back(InstRegConstraints(0, R_DE, 0));
-    constraints[OP_STORE].push_back(InstRegConstraints(0, R_HL, 0));
-    constraints[OP_STORE].push_back(InstRegConstraints(0, R_IX, 0));
-    constraints[OP_STORE].push_back(InstRegConstraints(0, R_IY, 0));
+    constraints[OP_STORE].rsrcs1.insert(R_A);
+    constraints[OP_STORE].rsrcs1.insert(R_BC);
+    constraints[OP_STORE].rsrcs1.insert(R_DE);
+    constraints[OP_STORE].rsrcs1.insert(R_HL);
+    constraints[OP_STORE].rsrcs1.insert(R_IX);
+    constraints[OP_STORE].rsrcs1.insert(R_IY);
 
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_B));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_C));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_D));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_E));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_H));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_L));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IXH));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IXL));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IYH));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_A , R_A , R_IYL));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_HL, R_HL, R_BC));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_HL, R_HL, R_DE));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_IX, R_IX, R_BC));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_IX, R_IX, R_DE));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_IY, R_IY, R_BC));
-    constraints[OP_ADD].push_back(InstRegConstraints(R_IY, R_IY, R_DE));
+    constraints[OP_ADD].collapse_rdst_and_rsrc1 = true;
+    constraints[OP_ADD].rdsts.insert(R_A);
+    constraints[OP_ADD].rdsts.insert(R_HL);
+    constraints[OP_ADD].rdsts.insert(R_IX);
+    constraints[OP_ADD].rsrcs1.insert(R_A);
+    constraints[OP_ADD].rsrcs1.insert(R_HL);
+    constraints[OP_ADD].rsrcs1.insert(R_IX);
+    constraints[OP_ADD].rsrcs2.insert(R_B);
+    constraints[OP_ADD].rsrcs2.insert(R_C);
+    constraints[OP_ADD].rsrcs2.insert(R_D);
+    constraints[OP_ADD].rsrcs2.insert(R_E);
+    constraints[OP_ADD].rsrcs2.insert(R_H);
+    constraints[OP_ADD].rsrcs2.insert(R_L);
+    constraints[OP_ADD].rsrcs2.insert(R_IXH);
+    constraints[OP_ADD].rsrcs2.insert(R_IXL);
+    constraints[OP_ADD].rsrcs2.insert(R_IYH);
+    constraints[OP_ADD].rsrcs2.insert(R_IYL);
+    constraints[OP_ADD].rsrcs2.insert(R_BC);
+    constraints[OP_ADD].rsrcs2.insert(R_DE);
 
     constraints[OP_SUB] = constraints[OP_ADD];
 
-    constraints[OP_CALL].push_back(InstRegConstraints(R_HL, 0, 0));
+    constraints[OP_CALL].rdsts.insert(R_HL);
+    constraints[OP_CALL].rsrcs1.insert(R_DE);
+    constraints[OP_CALL].rsrcs1.insert(R_E);
+    constraints[OP_CALL].rsrcs1.insert(R_D);
+    constraints[OP_CALL].rsrcs1.insert(R_HL);
+    constraints[OP_CALL].rsrcs1.insert(R_L);
+    constraints[OP_CALL].rsrcs1.insert(R_H);
+    constraints[OP_CALL].rsrcs1.insert(R_BC);
+    constraints[OP_CALL].rsrcs1.insert(R_C);
+    constraints[OP_CALL].rsrcs1.insert(R_B);
+    constraints[OP_CALL].rsrcs1.insert(R_IY);
+    constraints[OP_CALL].rsrcs1.insert(R_IYL);
+    constraints[OP_CALL].rsrcs1.insert(R_IYH);
 
-    constraints[OP_RET].push_back(InstRegConstraints(0, R_HL, 0));
+    constraints[OP_RET].rsrcs1.insert(R_HL);
 }
 
 void Machine::dump_reg(RealReg reg, std::ostream &o) {
@@ -99,7 +114,7 @@ void Machine::asmgen(RealRegMap &hardregs, Inst *inst, ostream &o) {
             o << "\tld ";
             dump_reg(hardregs[inst->rdst], o);
             o << ",";
-            dump_reg(hardregs[inst->rdst], o);
+            dump_reg(hardregs[inst->rsrc1], o);
             o << endl;
             break;
         case OP_LOADIMM:
@@ -109,16 +124,31 @@ void Machine::asmgen(RealRegMap &hardregs, Inst *inst, ostream &o) {
             o << endl;
             break;
         case OP_LOAD:
-            o << "\tld ";
-            dump_reg(hardregs[inst->rdst], o);
-            o << ",(" << inst->lsrc << ")";
-            o << endl;
+            if(hardregs[inst->rdst] == R_IX) {
+                o << "\tld ixl,(" << inst->lsrc << ")" << endl;
+                o << "\tld ixh,(" << inst->lsrc << "+1)" << endl;
+            } else if(hardregs[inst->rdst] == R_IY) {
+                o << "\tld iyl,(" << inst->lsrc << ")" << endl;
+                o << "\tld iyh,(" << inst->lsrc << "+1)" << endl;
+            } else {
+                o << "\tld ";
+                dump_reg(hardregs[inst->rdst], o);
+                o << ",(" << inst->lsrc << ")";
+                o << endl;
+            }
             break;
         case OP_STORE:
-            o << "\tld ";
-            o << "(" << inst->ldst << "),";
-            dump_reg(hardregs[inst->rsrc1], o);
-            o << endl;
+            if(hardregs[inst->rsrc1] == R_IX) {
+                o << "\tld (" << inst->ldst << "),ixl" << endl;
+                o << "\tld (" << inst->ldst << "+1),ixh" << endl;
+            } else if(hardregs[inst->rsrc1] == R_IY) {
+                o << "\tld (" << inst->ldst << "),iyl" << endl;
+                o << "\tld (" << inst->ldst << "+1),iyh" << endl;
+            } else {
+                o << "\tld (" << inst->ldst << "),";
+                dump_reg(hardregs[inst->rsrc1], o);
+                o << endl;
+            }
             break;
         case OP_ADD:
             o << "\tadd ";

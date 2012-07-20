@@ -26,4 +26,5 @@ TODO:
 * tool for roms (using pragmas maybe?)
 * declare same method with different args
 * box/unbox basic types
+* save modified regs in a method (except return types)
 

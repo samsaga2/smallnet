@@ -20,21 +20,22 @@ class RegGraph {
         typedef std::map<Node, Colors> NodeColors;
         typedef std::map<Node, RealReg> NodeFinal;
         typedef std::map<IR::VirtualReg, Node> Reg2Node;
-        typedef std::map<Node, IR::VirtualReg> Node2Reg;
+        typedef std::map<IR::VirtualReg, IR::VirtualReg> CollapsedRegs;
 
         Nodes nodes;
         EdgeMap edges;
         NodeColors node_colors;
         BaseMachine *machine;
         Reg2Node reg2node;
-        Node2Reg node2reg;
+        CollapsedRegs collapsedRegs;
 
         void build_final(NodeFinal &node_final, VertexFinal &vertex_final);
 
     public:
         VertexFinal vertex_final;
 
-        RegGraph(BaseMachine *machine) : node_count(0), machine(machine) { }
+        RegGraph(BaseMachine *machine) : node_count(1), machine(machine) { }
+        void collapse_regs(IR::VirtualReg irreg1, IR::VirtualReg irreg2);
         void add_reg(IR::VirtualReg irreg);
         void add_edge(IR::VirtualReg irreg1, IR::VirtualReg irreg2);
         void add_reg_candidate(IR::VirtualReg irreg, RealReg mreg);
